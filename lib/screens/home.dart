@@ -37,16 +37,46 @@ class Home extends StatelessWidget {
           ),
           ElevatedButton(onPressed: (){
             showModalBottomSheet(context: context, builder: (BuildContext context){
-              return SizedBox(
-                height: 400,
-                child: Center(
-                  child: ElevatedButton(
-                    child: const Text('close'),
-                    onPressed: (){
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
+              return Form(
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Nom',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty){
+                            return 'enter something';
+                          }
+                          return null;
+                        },
+                      ),
+                    TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Date',
+                        filled: true
+                      ),
+                      readOnly: true,
+                      onTap : () {
+                        _selectDate(context);
+                      },
+                    ),
+                    Row(children: [
+                      ElevatedButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                          child: const Text('close')
+                      ),
+                      ElevatedButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                          child: const Text('add')
+                      ),
+                    ],)
+                    ],
+                  )
               );
             });
           }, child: const Text('data'))

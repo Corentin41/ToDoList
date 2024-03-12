@@ -9,8 +9,8 @@ class ToDo {
 
   ToDo({
     required this.id,
-    required this.todoTitle,
     this.isDone = false,
+    required this.todoTitle,
   });
 
   static List<ToDo> todoList() {

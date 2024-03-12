@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart';
 import 'package:todolist/widgets/todo_item.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
    Home({Key? key}) : super(key:key);
 
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home>{
+
+  final TextEditingController _dateController = TextEditingController();
   final todosList = ToDo.todoList();
+  String _name = '';
+  String _date = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,31 +61,47 @@ class Home extends StatelessWidget {
                           }
                           return null;
                         },
+                        onSaved: (value) {
+                          _name = value!;
+                        },
                       ),
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Date',
-                        filled: true
+                      TextField(
+                        controller: _dateController,
+                        decoration: const InputDecoration(
+                            labelText: 'Date',
+                            filled: true
+                        ),
+                        readOnly: true,
+                        onTap : () async {
+                          final DateTime? dateTime = await showDatePicker(
+                              context: context,
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime(2100)
+                          );
+                          if(dateTime != null){
+                            setState(() {
+                              _dateController.text = dateTime.toString().split(" ")[0];
+                            });
+                          }
+                        },
+                        onChanged: (value) {
+                          _date = value;
+                        },
                       ),
-                      readOnly: true,
-                      onTap : () {
-                        _selectDate(context);
-                      },
-                    ),
-                    Row(children: [
-                      ElevatedButton(
-                          onPressed: (){
-                            Navigator.pop(context);
-                          },
-                          child: const Text('close')
-                      ),
-                      ElevatedButton(
-                          onPressed: (){
-                            Navigator.pop(context);
-                          },
-                          child: const Text('add')
-                      ),
-                    ],)
+                      Row(children: [
+                        ElevatedButton(
+                            onPressed: (){
+                              Navigator.pop(context);
+                            },
+                            child: const Text('close')
+                        ),
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('add')
+                        ),
+                      ],)
                     ],
                   )
               );

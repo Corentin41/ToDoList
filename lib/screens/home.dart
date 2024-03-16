@@ -38,8 +38,11 @@ class _HomeState extends State<Home>{
                         Container(
                           child: const Text('Tâches',),
                         ),
-                        for (ToDo todo in todosList)
-                          TodoItem(todo: todo,),
+                        for (ToDo todoo in todosList)
+                          TodoItem(
+                            todo: todoo,
+                            onToDoChanged: _handleToDoChange,
+                            onDeleteItem: _deleteToDoItem,),
                       ],
                     )
                 )

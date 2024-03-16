@@ -115,6 +115,18 @@ class _HomeState extends State<Home>{
     );
   }
 
+  void _handleToDoChange(ToDo todo){
+    setState(() {
+      todo.isDone = !todo.isDone;
+    });
+  }
+
+  void _deleteToDoItem(String id){
+    setState(() {
+      todosList.removeWhere((item) => item.id == id);
+    });
+  }
+
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.lime,

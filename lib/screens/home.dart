@@ -4,20 +4,19 @@ import 'package:todolist/widgets/todo_item.dart';
 
 class Home extends StatefulWidget {
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-   Home({Key? key}) : super(key:key);
+  Home({Key? key}) : super(key:key);
 
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home>{
-
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _dateController = TextEditingController();
-  final todosList = ToDo.todoList();
   String _name = '';
   String _date = '';
+
+  List<ToDo> toDoList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +37,7 @@ class _HomeState extends State<Home>{
                         Container(
                           child: const Text('Tâches',),
                         ),
-                        for (ToDo todoo in todosList)
+                        for (ToDo todoo in toDoList)
                           TodoItem(
                             todo: todoo,
                             onToDoChanged: _handleToDoChange,
@@ -52,20 +51,22 @@ class _HomeState extends State<Home>{
           ElevatedButton(onPressed: (){
             showModalBottomSheet(context: context, builder: (BuildContext context){
               return Form(
+                  key: _formKey,
                   child: Column(
                     children: [
                       TextFormField(
                         decoration: const InputDecoration(
                           labelText: 'Nom',
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty){
+                        validator: (titleValue) {
+                          if (titleValue == null || titleValue.isEmpty){
                             return 'enter something';
                           }
                           return null;
                         },
-                        onSaved: (value) {
-                          _name = value!;
+                        onSaved: (titleValue) {
+                          print(titleValue);
+                          _name = titleValue!;
                         },
                       ),
                       TextField(
@@ -87,8 +88,8 @@ class _HomeState extends State<Home>{
                             });
                           }
                         },
-                        onChanged: (value) {
-                          _date = value;
+                        onChanged: (dateValue) {
+                          _date = dateValue;
                         },
                       ),
                       Row(children: [
@@ -100,7 +101,22 @@ class _HomeState extends State<Home>{
                         ),
                         ElevatedButton(
                             onPressed: () {
-                              Navigator.pop(context);
+                              if (_formKey.currentState!.validate()) {
+                                // Si la validation réussit, accédez aux valeurs du formulaire
+                                // à l'aide de la méthode save() et effectuez des actions nécessaires
+                                _formKey.currentState!.save();
+
+                                // Utilisez les valeurs du formulaire comme nécessaire
+                                // par exemple, enregistrez-les dans une base de données, envoyez-les à un serveur, etc.
+                                // _name contiendra la valeur du champ de texte nom, _email la valeur du champ de texte email, etc.
+
+                                setState(() {
+                                  int l = toDoList.length + 1;
+                                  ToDo newToDo = ToDo(id: l.toString(), todoTitle: _name);
+                                  toDoList.add(newToDo);
+                                  Navigator.pop(context);
+                                });
+                              }
                             },
                             child: const Text('add')
                         ),
@@ -123,7 +139,7 @@ class _HomeState extends State<Home>{
 
   void _deleteToDoItem(String id){
     setState(() {
-      todosList.removeWhere((item) => item.id == id);
+      toDoList.removeWhere((item) => item.id == id);
     });
   }
 

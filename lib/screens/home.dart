@@ -126,7 +126,7 @@ class _HomeState extends State<Home> {
                                       setState(() {
                                         int l = toDoList.length + 1;
                                         ToDo newToDo = ToDo(
-                                            id: l.toString(), todoTitle: _name);
+                                            id: l.toString(), todoTitle: _name, date: _dateController.text );
                                         toDoList.add(newToDo);
                                         _dateController.text = '';
                                         Navigator.pop(context);

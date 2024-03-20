@@ -28,6 +28,9 @@ class TodoItem extends StatelessWidget{
             decoration: todo.isDone? TextDecoration.lineThrough : null,
           ),
         ),
+
+        subtitle: checkDate(todo),
+
         trailing: Container(
           height: 35,
           width: 35,
@@ -48,4 +51,11 @@ class TodoItem extends StatelessWidget{
     );
   }
 
+}
+
+Widget? checkDate(ToDo todo) {
+  if(todo.date != null && todo.date!.isNotEmpty){
+    return Text(todo.date!);
+  }
+  return null;
 }

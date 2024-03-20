@@ -9,18 +9,8 @@ class ToDo {
 
   ToDo({
     required this.id,
-    required this.todoTitle,
     this.isDone = false,
+    required this.todoTitle,
   });
-
-  static List<ToDo> todoList() {
-    return [
-      ToDo(id: '01', todoTitle: 'Ménage'),
-      ToDo(id: '02', todoTitle: 'RDV Medecin'),
-      ToDo(id: '03', todoTitle: 'Bar'),
-      ToDo(id: '04', todoTitle: 'Sport'),
-      ToDo(id: '05', todoTitle: 'Soirée'),
-    ];
-  }
 
 }

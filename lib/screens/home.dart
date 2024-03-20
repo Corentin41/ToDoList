@@ -107,6 +107,7 @@ class _HomeState extends State<Home> {
                             Row(children: [
                               ElevatedButton(
                                   onPressed: () {
+                                    _dateController.text = '';
                                     Navigator.pop(context);
                                   },
                                   child: const Text('close')
@@ -127,6 +128,7 @@ class _HomeState extends State<Home> {
                                         ToDo newToDo = ToDo(
                                             id: l.toString(), todoTitle: _name);
                                         toDoList.add(newToDo);
+                                        _dateController.text = '';
                                         Navigator.pop(context);
                                       });
                                     }

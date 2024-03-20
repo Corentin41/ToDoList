@@ -54,8 +54,8 @@ class _HomeState extends State<Home> {
 
             // 2e enfant : la bouton pour ajouter une tâche
             Positioned(
-              bottom: 10,
-              right: 10,
+              bottom: 16,
+              right: 16,
               child: FloatingActionButton(
                   backgroundColor: Colors.lime,
                   child: Icon(Icons.add),

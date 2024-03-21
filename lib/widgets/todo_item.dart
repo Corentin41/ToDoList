@@ -5,8 +5,9 @@ class TodoItem extends StatelessWidget{
   final ToDo todo;
   final onToDoChanged;
   final onDeleteItem;
+  final onEditItem;
 
-  const TodoItem({Key? key, required this.todo, required this.onToDoChanged, required this.onDeleteItem}) : super(key:key);
+  const TodoItem({Key? key, required this.todo, required this.onToDoChanged, required this.onDeleteItem, required this.onEditItem}) : super(key:key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,19 +34,40 @@ class TodoItem extends StatelessWidget{
 
         trailing: Container(
           height: 35,
-          width: 35,
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(5)
-          ),
-          child: IconButton(
-            color: Colors.white,
-            iconSize: 16,
-            icon: const Icon(Icons.delete),
-            onPressed: (){
-              onDeleteItem(todo.id);
-            },
-          ),
+          width: 100,
+
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(5)
+                ),
+                child: IconButton(
+                  color: Colors.white,
+                  iconSize: 16,
+                  icon: const Icon(Icons.edit),
+                  onPressed: (){
+                    onEditItem(todo);
+                  },
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(5)
+                ),
+                child: IconButton(
+                  color: Colors.white,
+                  iconSize: 16,
+                  icon: const Icon(Icons.delete),
+                  onPressed: (){
+                    onDeleteItem(todo.id);
+                  },
+                ),
+              ),
+            ],
+          )
         ),
       ),
     );

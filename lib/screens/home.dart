@@ -44,7 +44,9 @@ class _HomeState extends State<Home> {
                             TodoItem(
                               todo: todoo,
                               onToDoChanged: _handleToDoChange,
-                              onDeleteItem: _deleteToDoItem,),
+                              onDeleteItem: _deleteToDoItem,
+                              onEditItem: _editToDoItem,
+                            ),
                         ],
                       )
                   )
@@ -58,7 +60,7 @@ class _HomeState extends State<Home> {
               right: 16,
               child: FloatingActionButton(
                   backgroundColor: Colors.lime,
-                  child: Icon(Icons.add),
+                  child: const Icon(Icons.add),
                   onPressed: () {
                     showModalBottomSheet(context: context, builder: (BuildContext context) {
                       return Form(
@@ -161,10 +163,97 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void _editToDoItem(ToDo todo) {
+    showModalBottomSheet(context: context, builder: (BuildContext context) {return _buildEditForm(todo);});
+  }
+
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.lime,
       title: const Text('ToDo List'),
+    );
+  }
+
+  Form _buildEditForm(ToDo todo){
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: "titre",
+            ),
+            validator: (titleValue) {
+              if (titleValue == null || titleValue.isEmpty) {
+                titleValue = todo.todoTitle;
+                _name = todo.todoTitle!;
+                return null;
+              }
+              return null;
+            },
+            initialValue: todo.todoTitle,
+            onSaved: (titleValue) {
+              _name = titleValue!;
+            },
+          ),
+          TextField(
+            controller: _dateController,
+            decoration: InputDecoration(
+                labelText: todo.date,
+                filled: true
+            ),
+            readOnly: true,
+            onTap: () async {
+              final DateTime? dateTime = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100)
+              );
+              if (dateTime != null) {
+                setState(() {
+                  _dateController.text =
+                  dateTime.toString().split(" ")[0];
+                });
+              }
+            },
+          ),
+          Row(children: [
+            ElevatedButton(
+                onPressed: () {
+                  _dateController.text = '';
+                  Navigator.pop(context);
+                },
+                child: const Text('close')
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
+
+                    setState(() {
+                      Iterable<ToDo> item = toDoList.where((item) => item.id == todo.id);
+
+                      if(_name != todo.todoTitle!){
+                        item.first.todoTitle = _name;
+                      }
+
+                      print(_dateController.text);
+                      if(_dateController.text.isEmpty){
+                        item.first.date = todo.date;
+                      }else{
+                        item.first.date = _dateController.text;
+                      }
+
+                      _dateController.text = '';
+                      Navigator.pop(context);
+                    });
+                  }
+                },
+                child: const Text('modif')
+            ),
+          ],)
+        ],
+      ),
     );
   }
 

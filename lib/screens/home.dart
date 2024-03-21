@@ -118,47 +118,54 @@ class _HomeState extends State<Home> {
                                 ),
 
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
 
                                     // Bouton pour ajouter la tâche
-                                    ElevatedButton(
-                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                        onPressed: () {
-                                          if (_formKey.currentState!
-                                              .validate()) {
-                                            // Si la validation réussit, accédez aux valeurs du formulaire
-                                            // à l'aide de la méthode save() et effectuez des actions nécessaires
-                                            _formKey.currentState!.save();
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                          onPressed: () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              // Si la validation réussit, accédez aux valeurs du formulaire
+                                              // à l'aide de la méthode save() et effectuez des actions nécessaires
+                                              _formKey.currentState!.save();
 
-                                            // Utilisez les valeurs du formulaire comme nécessaire
-                                            // par exemple, enregistrez-les dans une base de données, envoyez-les à un serveur, etc.
-                                            // _name contiendra la valeur du champ de texte nom, _email la valeur du champ de texte email, etc.
+                                              // Utilisez les valeurs du formulaire comme nécessaire
+                                              // par exemple, enregistrez-les dans une base de données, envoyez-les à un serveur, etc.
+                                              // _name contiendra la valeur du champ de texte nom, _email la valeur du champ de texte email, etc.
 
-                                            setState(() {
-                                              int l = toDoList.length + 1;
-                                              ToDo newToDo = ToDo(
-                                                  id: l.toString(),
-                                                  todoTitle: _name,
-                                                  date: _dateController.text);
-                                              toDoList.add(newToDo);
-                                              _dateController.text = '';
-                                              Navigator.pop(context);
-                                            });
-                                          }
-                                        },
-                                        child: const Text('ajouter',
-                                        style: TextStyle(color: Colors.white),)),
+                                              setState(() {
+                                                int l = toDoList.length + 1;
+                                                ToDo newToDo = ToDo(
+                                                    id: l.toString(),
+                                                    todoTitle: _name,
+                                                    date: _dateController.text);
+                                                toDoList.add(newToDo);
+                                                _dateController.text = '';
+                                                Navigator.pop(context);
+                                              });
+                                            }
+                                          },
+                                          child: const Text('ajouter',
+                                            style: TextStyle(color: Colors.white),)),
+                                    ),
 
                                     // Bouton pour fermer le showModalBottomSheet
-                                    ElevatedButton(
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                      onPressed: () {
-                                        _dateController.text = '';
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('fermer',
-                                      style: TextStyle(color: Colors.white),),
-                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        onPressed: () {
+                                          _dateController.text = '';
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('fermer',
+                                          style: TextStyle(color: Colors.white),),
+                                      ),
+                                    )
                                   ],
                                 )
                               ],
@@ -254,17 +261,21 @@ class _HomeState extends State<Home> {
 
           // Les boutons pour valider ou annuler la modification
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
               // Bouton modifier
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              Container(
+                padding: const EdgeInsets.all(5),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
 
                       setState(() {
                         Iterable<ToDo> item =
-                            toDoList.where((item) => item.id == todo.id);
+                        toDoList.where((item) => item.id == todo.id);
 
                         if (_name != todo.todoTitle!) {
                           item.first.todoTitle = _name;
@@ -283,17 +294,23 @@ class _HomeState extends State<Home> {
                     }
                   },
                   child: const Text('modifier',
-                  style: TextStyle(color: Colors.white),)),
+                    style: TextStyle(color: Colors.white),),
+                ),
+              ),
 
               // Bouton annuler
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () {
-                    _dateController.text = '';
-                    Navigator.pop(context);
-                  },
-                  child: const Text('annuler',
-                    style: TextStyle(color: Colors.white),)),
+              Container(
+                padding: const EdgeInsets.all(5),
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () {
+                      _dateController.text = '';
+                      Navigator.pop(context);
+                    },
+                    child: const Text('annuler',
+                      style: TextStyle(color: Colors.white),)
+                ),
+              )
             ],
           )
         ],

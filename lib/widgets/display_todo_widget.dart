@@ -1,46 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart';
 
-import 'MyPopup.dart';
+import '../database/todo_db.dart';
+import 'delete_dialog_widget.dart';
 
-class TodoItem extends StatelessWidget {
-  final ToDo todo;
-  final onToDoChanged;
-  final onDeleteItem;
-  final onEditItem;
+class DisplayTodo extends StatelessWidget {
+  final Todo todo;
 
-  const TodoItem(
-      {Key? key,
-      required this.todo,
-      required this.onToDoChanged,
-      required this.onDeleteItem,
-      required this.onEditItem})
-      : super(key: key);
+  const DisplayTodo({Key? key, required this.todo}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: ListTile(
+
         onTap: () {
-          onToDoChanged(todo);
+          // Changer valeur isDone pour indiquer que la tâche est terminée
+          todo.isDone = !todo.isDone;
         },
+
+        // Background qui entoure la tâche
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         tileColor: Colors.lime,
 
         // Case à cocher pour indiquer qu'une tâche est terminée
-        leading: Icon(
-          todo.isDone ? Icons.check_box : Icons.check_box_outline_blank,
-          color: Colors.blueAccent,
-        ),
+        leading: todo.isDone == false
+            ? const Icon(Icons.check_box_outline_blank, color: Colors.blueAccent)
+            : const Icon(Icons.check_box, color: Colors.blueAccent),
 
         // Titre de la tâche
         title: Text(
-          todo.todoTitle!,
-          style: TextStyle(
-            fontSize: 20,
-            decoration: todo.isDone ? TextDecoration.lineThrough : null,
-          ),
+          todo.title!,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 20, decoration: todo.isDone ? TextDecoration.lineThrough : null),
         ),
 
         // Sous-titre de la tâche : la date
@@ -64,8 +57,13 @@ class TodoItem extends StatelessWidget {
                     color: Colors.white,
                     iconSize: 16,
                     icon: const Icon(Icons.edit),
+                    // Modifier la tâche
                     onPressed: () {
-                      onEditItem(todo);
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return updateTodo(todo);
+                          });
                     },
                   ),
                 ),
@@ -81,30 +79,28 @@ class TodoItem extends StatelessWidget {
                     iconSize: 16,
                     icon: const Icon(Icons.delete),
                     onPressed: () {
-
-                      // Appeler la popup
-                      /*showDialog(
+                      // Appeler la popup pour demander confirmation de la supression
+                      showDialog(
                         context: context,
                         builder: (BuildContext context) {
-                          return MyPopup(todo: todo,);
+                          return DeleteDialog(todo: todo,);
                         },
-                      );*/
-
-                      // Supprimer un todo sans la popup
-                      onDeleteItem(todo.id);
-
+                      );
                     },
                   ),
                 ),
               ],
-            )),
+            ),
+        ),
       ),
     );
   }
 }
 
+
+
 // Fonction pour vérifier si l'utilisateur a entré une date ou non
-Widget? checkDate(ToDo todo) {
+Widget? checkDate(Todo todo) {
   if (todo.date != null && todo.date!.isNotEmpty) {
     return Text(todo.date!);
   }

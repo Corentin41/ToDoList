@@ -12,7 +12,7 @@ class TodoDB {
     await database.execute('CREATE TABLE $tableName '
         '(id INTEGER PRIMARY KEY,'
         ' title TEXT NOT NULL,'
-        ' isDone TEXT NOT NULL,'
+        ' isDone INT NOT NULL,'
         ' date TEXT,'
         ' created_at INTEGER NOT NULL DEFAULT (cast(strftime(\'%s\',\'now\') as int)),'
         ' updated_at INTEGER'
@@ -26,8 +26,8 @@ class TodoDB {
     // Si oui alors on peut insérer des données
     return await database.rawInsert(
       '''INSERT INTO $tableName (title,isDone,date,created_at) VALUES (?,?,?,?)''',
-      // Par défaut, mettre le isDone à False
-      [title, false, date, DateTime.now().millisecondsSinceEpoch],
+      // Par défaut isDone est à false car la tâche créée n'est pas terminée
+      [title, 0, date, DateTime.now().millisecondsSinceEpoch],
     );
   }
 
@@ -48,7 +48,7 @@ class TodoDB {
   }
 
   // Fonction pour modifier une donnée dans la BDD à partir d'un id
-  Future<int> update({required int id, String? title, bool? isDone, String? date}) async {
+  Future<int> update({required int id, String? title, int? isDone, String? date}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,

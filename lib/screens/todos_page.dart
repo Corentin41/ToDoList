@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../database/todo_db.dart';
 import '../model/todo.dart';
@@ -28,7 +27,7 @@ class _TodosPageState extends State<TodosPage> {
   @override
   void initState() {
     super.initState();
-    // Récupérer toutes les tâches stockées en BDD
+    // Récupérer toutes les tâches stockées en BDD lors de l'arrivée sur la page
     fetchTodos();
   }
 
@@ -74,28 +73,42 @@ class _TodosPageState extends State<TodosPage> {
                       return Container(
                         margin: const EdgeInsets.all(5),
 
+                        // Si la tâche est terminée alors elle est grisée
                         child: Card(
+                          color: todo.isDone == 0
+                          ? Colors.lime
+                          : Colors.grey,
 
                           child: ListTile(
 
-                            // Au click sur la tâche on change son état (terminée / en cours)
+                            // Au click sur la tâche on change son état (terminée = 1 / en cours = 0)
                             onTap: () {
                               setState(() {
-                                todo.isDone = !todo.isDone;
+                                if (todo.isDone == 0) {
+                                  todo.isDone = 1;
+                                } else {
+                                  todo.isDone = 0;
+                                }
+                                // Appel à la méthode update de la BDD pour mettre à jour la tâche
+                                todoDB.update(id: todo.id, isDone: todo.isDone);
                               });
                             },
 
                             // Icon indiquant si la tâche est terminée ou non
                             leading: Icon(
-                              todo.isDone ? Icons.check_box : Icons.check_box_outline_blank,
+                              // Si la tâche est terminée (isDone à 1) alors afficher une check_box pleine
+                              todo.isDone == 0 ? Icons.check_box_outline_blank : Icons.check_box,
                               color: Colors.blueAccent,
                             ),
 
+                            // Affiche le titre de la tâche
                             title: Text(
                               todo.title,
                               style: TextStyle(
                                 fontSize: 16,
-                                decoration: todo.isDone ? TextDecoration.lineThrough : null,
+                                overflow: TextOverflow.ellipsis,
+                                // Si la tâche est terminée (isDone à 1) alors barrer le titre
+                                decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
                               ),
                             ),
 
@@ -171,7 +184,7 @@ class _TodosPageState extends State<TodosPage> {
       // Le bouton pour ajouter une nouvelle tâche
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.black),
         onPressed: () {
           // Au click afficher le BottomSheet pour créer une tâche
           showModalBottomSheet(
@@ -205,7 +218,7 @@ class _TodosPageState extends State<TodosPage> {
                     TextField(
                       controller: _dateController,
                       decoration: const InputDecoration(
-                          labelText: 'Date', filled: true),
+                          labelText: 'Date d\'échéance', filled: true),
                       readOnly: true,
                       onTap: () async {
                         final DateTime? dateTime =
@@ -243,7 +256,7 @@ class _TodosPageState extends State<TodosPage> {
                                     // Appel à la méthode create de la BDD pour enregistrer la tâche
                                     todoDB.create(title: _todoName, date: _dateController.text);
                                     _dateController.text = '';
-                                    // Récupérer toutes les tâches
+                                    // Rafraîchir l'affichage des tâches
                                     fetchTodos();
                                     Navigator.pop(context);
                                   });
@@ -287,8 +300,8 @@ class _TodosPageState extends State<TodosPage> {
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.lime,
-      title: const Text('Mes tâches'),
+      backgroundColor: Colors.green,
+      title: const Text('Mes tâches', style: TextStyle(color: Colors.black)),
     );
   }
   
@@ -418,7 +431,7 @@ class _TodosPageState extends State<TodosPage> {
             setState(() {
               // Appel à la méthode delete de la BDD pour supprimer la tâche
               todoDB.delete(todo.id);
-              // Récupérer toutes les tâches
+              // Rafraîchir l'affichage des tâches
               fetchTodos();
               Navigator.pop(context);
             });

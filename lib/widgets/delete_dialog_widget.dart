@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart';
 import 'package:todolist/screens/todos_page.dart';
 import 'package:todolist/widgets/display_todo_widget.dart';
@@ -65,4 +65,4 @@ class _DeleteDialogState extends State<DeleteDialog> {
   }
 
 
-}
+}*/

@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../database/todo_db.dart';
 import '../model/todo.dart';
-import '../widgets/display_todo_widget.dart';
 
 class TodosPage extends StatefulWidget {
   const TodosPage({super.key});
@@ -63,22 +62,102 @@ class _TodosPageState extends State<TodosPage> {
                 }
                 // Sinon récupérer les tâchs pour les afficher sous forme de liste
                 else {
-                  final todoList = snapshot.data!;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: ListView(
-                              children: [
-                                // Afficher chaque tâche présente dans la liste des tâches
-                                for (Todo todoo in todoList)
-                                  DisplayTodo(todo: todoo,),
-                              ],
+                  final todos = snapshot.data!;
+                  return ListView.separated(
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    itemCount: todos.length,
+                    itemBuilder: (context, index) {
+                      // Identifier chaque tâche avec son index
+                      final todo = todos[index];
+
+                      // Affichage de chaque tâche
+                      return Container(
+                        margin: const EdgeInsets.all(5),
+
+                        child: Card(
+
+                          child: ListTile(
+
+                            // Au click sur la tâche on change son état (terminée / en cours)
+                            onTap: () {
+                              setState(() {
+                                todo.isDone = !todo.isDone;
+                              });
+                            },
+
+                            // Icon indiquant si la tâche est terminée ou non
+                            leading: Icon(
+                              todo.isDone ? Icons.check_box : Icons.check_box_outline_blank,
+                              color: Colors.blueAccent,
                             ),
+
+                            title: Text(
+                              todo.title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                decoration: todo.isDone ? TextDecoration.lineThrough : null,
+                              ),
+                            ),
+
+                            subtitle: checkDate(todo),
+
+                            // Affichage de la date : bouton modifier et bouton supprimer
+                            trailing: Container(
+                              height: 45,
+                              width: 120,
+                              child: Row(
+                                children: [
+
+                                  // 1er enfant : modifier la tâche
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 5),
+                                    decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: IconButton(
+                                      color: Colors.white,
+                                      iconSize: 16,
+                                      icon: const Icon(Icons.edit),
+                                      // Appel à la fonction updateTodo
+                                      onPressed: () {
+                                        showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return updateTodo(todo);
+                                            });
+                                      },
+                                    ),
+                                  ),
+
+
+
+                                  // 2e enfant : supprimer la tâche
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 5),
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: IconButton(
+                                      color: Colors.white,
+                                      iconSize: 16,
+                                      icon: const Icon(Icons.delete),
+                                      // Appel à la fonction deleteTodo
+                                      onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return deleteTodo(todo);
+                                            });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 }
               }
@@ -86,6 +165,8 @@ class _TodosPageState extends State<TodosPage> {
           )
         ],
       ),
+
+
 
       // Le bouton pour ajouter une nouvelle tâche
       floatingActionButton: FloatingActionButton(
@@ -101,7 +182,7 @@ class _TodosPageState extends State<TodosPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Champ pour entrer le nom de la tâche·
+                    // Champ pour entrer le nom de la tâche
                     Padding(
                       padding: EdgeInsets.only(left: 10),
                       child: TextFormField(
@@ -195,11 +276,167 @@ class _TodosPageState extends State<TodosPage> {
     );
   }
 
+
+
+
+
+
+
+
+
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.lime,
       title: const Text('Mes tâches'),
+    );
+  }
+  
+
+  // Fonction pour vérifier si l'utilisateur a entré une date ou non
+  Widget? checkDate(Todo todo) {
+    if (todo.date != null && todo.date!.isNotEmpty) {
+      return Text(todo.date!);
+    }
+    return null;
+  }
+
+
+
+
+
+  // Fonction pour modifier une tâche
+  Form updateTodo(Todo todo) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // 1er enfant : titre de la tâche
+          Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                labelText: "titre",
+              ),
+              validator: (titleValue) {
+                if (titleValue == null || titleValue.isEmpty) {
+                  titleValue = todo.title;
+                  _todoName = todo.title!;
+                  return null;
+                }
+                return null;
+              },
+              initialValue: todo.title,
+              onSaved: (titleValue) {
+                _todoName = titleValue!;
+              },
+            ),
+          ),
+
+          // 2e enfant : la date
+          TextField(
+            controller: _dateController,
+            decoration: InputDecoration(labelText: todo.date, filled: true),
+            readOnly: true,
+            onTap: () async {
+              final DateTime? dateTime = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime(2100));
+              if (dateTime != null) {
+                setState(() {
+                  _dateController.text = dateTime.toString().split(" ")[0];
+                });
+              }
+            },
+          ),
+
+          // Les boutons pour valider ou annuler la modification
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+
+              // Bouton pour confirmer la modification de la tâche
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    onPressed: () {
+                      // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        // Si oui, alors mettre à jour la tâche dans la BDD
+                        setState(() {
+                          // Appel à la méthode update de la BDD pour mettre à jour la tâche
+                          todoDB.update(id: todo.id, title: _todoName, date: _dateController.text);
+                          _dateController.text = '';
+                          // Rafraîchir l'affichage des tâches
+                          fetchTodos();
+                          Navigator.pop(context);
+                        });
+                      }
+                    },
+                    child: const Text('modifier', style: TextStyle(color: Colors.white),)),
+              ),
+
+              // Bouton pour fermer le showModalBottomSheet et annuler la modification
+              Container(
+                padding: const EdgeInsets.all(10),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () {
+                    _dateController.text = '';
+                    Navigator.pop(context);
+                  },
+                  child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+
+  // Fonction pour supprimer une tâche
+  deleteTodo(Todo todo) {
+    return AlertDialog(
+
+      title: const Center(child: Text('Supprimer la tâche')),
+
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        // Confirmer la supression de la tâche
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          onPressed: () {
+            setState(() {
+              // Appel à la méthode delete de la BDD pour supprimer la tâche
+              todoDB.delete(todo.id);
+              // Récupérer toutes les tâches
+              fetchTodos();
+              Navigator.pop(context);
+            });
+          },
+          child: const Text('Confirmer', style: TextStyle(color: Colors.white),),
+        ),
+
+        // Annuler et fermer la popup
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          onPressed: () {
+            // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
+            Navigator.of(context).pop();
+          },
+          child: const Text('Annuler',
+            style: TextStyle(color: Colors.white),),
+        ),
+      ],
     );
   }
 

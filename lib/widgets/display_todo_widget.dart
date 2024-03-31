@@ -1,13 +1,36 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart';
 
 import '../database/todo_db.dart';
 import 'delete_dialog_widget.dart';
 
-class DisplayTodo extends StatelessWidget {
+class DisplayTodo extends StatefulWidget {
   final Todo todo;
 
   const DisplayTodo({Key? key, required this.todo}) : super(key: key);
+
+  @override
+  State<DisplayTodo> createState() => _DisplayTodoState();
+}
+
+class _DisplayTodoState extends State<DisplayTodo> {
+  // Liste de tâches et la BDD
+  Future<List<Todo>>? futureTodos;
+  final todoDB = TodoDB();
+
+  @override
+  void initState() {
+    super.initState();
+    // Récupérer toutes les tâches stockées en BDD
+    fetchTodos();
+  }
+
+  // Fonction qui permet de récupérer toutes les tâches stockées en BDD
+  void fetchTodos() {
+    setState(() {
+      futureTodos = todoDB.fetchAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +40,7 @@ class DisplayTodo extends StatelessWidget {
 
         onTap: () {
           // Changer valeur isDone pour indiquer que la tâche est terminée
-          todo.isDone = !todo.isDone;
+          widget.todo.isDone = !widget.todo.isDone;
         },
 
         // Background qui entoure la tâche
@@ -25,19 +48,19 @@ class DisplayTodo extends StatelessWidget {
         tileColor: Colors.lime,
 
         // Case à cocher pour indiquer qu'une tâche est terminée
-        leading: todo.isDone == false
+        leading: widget.todo.isDone == false
             ? const Icon(Icons.check_box_outline_blank, color: Colors.blueAccent)
             : const Icon(Icons.check_box, color: Colors.blueAccent),
 
         // Titre de la tâche
         title: Text(
-          todo.title!,
+          widget.todo.title!,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 20, decoration: todo.isDone ? TextDecoration.lineThrough : null),
+          style: TextStyle(fontSize: 20, decoration: widget.todo.isDone ? TextDecoration.lineThrough : null),
         ),
 
         // Sous-titre de la tâche : la date
-        subtitle: checkDate(todo),
+        subtitle: checkDate(widget.todo),
 
         // Contient les 2 options (pour modifier ou supprimer la tâche)
         trailing: Container(
@@ -59,11 +82,11 @@ class DisplayTodo extends StatelessWidget {
                     icon: const Icon(Icons.edit),
                     // Modifier la tâche
                     onPressed: () {
-                      showModalBottomSheet(
+                      /*showModalBottomSheet(
                           context: context,
                           builder: (BuildContext context) {
                             return updateTodo(todo);
-                          });
+                          });*/
                     },
                   ),
                 ),
@@ -78,14 +101,18 @@ class DisplayTodo extends StatelessWidget {
                     color: Colors.white,
                     iconSize: 16,
                     icon: const Icon(Icons.delete),
-                    onPressed: () {
+                    onPressed: () async {
+                      // Supprimer la tâche
+                      await todoDB.delete(widget.todo.id);
+                      // Rafraîchir l'affichage
+                      fetchTodos();
                       // Appeler la popup pour demander confirmation de la supression
-                      showDialog(
+                      /*showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return DeleteDialog(todo: todo,);
                         },
-                      );
+                      );*/
                     },
                   ),
                 ),
@@ -106,3 +133,4 @@ Widget? checkDate(Todo todo) {
   }
   return null;
 }
+*/

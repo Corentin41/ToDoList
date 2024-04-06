@@ -18,11 +18,11 @@ class _TodosPageState extends State<TodosPage> {
 
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  // Pour la saisie de la date
   final TextEditingController _dateController = TextEditingController();
 
-  // Pour reset le nom de la tâche et la date dans le formulaire de création de tâche
+  // Pour garder en mémoire le titre de la tâche
   String _todoName = '';
-  String _date = '';
 
   @override
   void initState() {
@@ -112,7 +112,10 @@ class _TodosPageState extends State<TodosPage> {
                               ),
                             ),
 
-                            subtitle: checkDate(todo),
+                            // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
+                            subtitle: checkDate(todo) == true
+                            ? Text(todo.date!)
+                            : null,
 
                             // Affichage de la date : bouton modifier et bouton supprimer
                             trailing: Container(
@@ -135,6 +138,8 @@ class _TodosPageState extends State<TodosPage> {
                                       onPressed: () {
                                         showModalBottomSheet(
                                             context: context,
+                                            // Pour quitter la modification d'une tâche il faut cliquer sur le bouton annuler
+                                            isDismissible: false,
                                             builder: (BuildContext context) {
                                               return updateTodo(todo);
                                             });
@@ -160,7 +165,8 @@ class _TodosPageState extends State<TodosPage> {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return deleteTodo(todo);
-                                            });
+                                            },
+                                        );
                                       },
                                     ),
                                   ),
@@ -190,6 +196,8 @@ class _TodosPageState extends State<TodosPage> {
           showModalBottomSheet(
             constraints: const BoxConstraints(maxWidth: double.maxFinite),
             context: context,
+            // Pour quitter l'ajout d'une tâche il faut cliquer sur le bouton annuler
+            isDismissible: false,
             builder: (BuildContext context) {
               return Form(
                 key: _formKey,
@@ -197,17 +205,17 @@ class _TodosPageState extends State<TodosPage> {
                   children: [
                     // Champ pour entrer le nom de la tâche
                     Padding(
-                      padding: EdgeInsets.only(left: 10),
+                      padding: const EdgeInsets.only(left: 10),
                       child: TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Nom',
-                        ),
+                        decoration: const InputDecoration(labelText: 'Titre de la tâche'),
+                        // Afficher un message d'erreur si le champ du titre est vide
                         validator: (titleValue) {
                           if (titleValue == null || titleValue.isEmpty) {
                             return 'Titre requis';
                           }
                           return null;
                         },
+                        // Sauvegarder le titre de la tâche
                         onSaved: (titleValue) {
                           _todoName = titleValue!;
                         },
@@ -218,23 +226,27 @@ class _TodosPageState extends State<TodosPage> {
                     TextField(
                       controller: _dateController,
                       decoration: const InputDecoration(
-                          labelText: 'Date d\'échéance', filled: true),
+                          labelText: 'Date d\'échéance',
+                          filled: true,
+                      ),
+                      // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
                       readOnly: true,
                       onTap: () async {
-                        final DateTime? dateTime =
-                        await showDatePicker(
+                        final DateTime? dateTime = await showDatePicker(
                             context: context,
                             firstDate: DateTime.now(),
-                            lastDate: DateTime(2100));
+                            lastDate: DateTime(2100),
+                        );
+                        // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
                         if (dateTime != null) {
                           setState(() {
-                            _dateController.text =
-                            dateTime.toString().split(" ")[0];
+                            _dateController.text = dateTime.toString().split(" ")[0];
                           });
                         }
                       },
+                      // Sauvegarder la date de la tâche
                       onChanged: (dateValue) {
-                        _date = dateValue;
+                        _dateController.text = dateValue;
                       },
                     ),
 
@@ -254,9 +266,10 @@ class _TodosPageState extends State<TodosPage> {
                                   // Si oui, alors ajout de la tâche dans la BDD
                                   setState(() {
                                     // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                    todoDB.create(title: _todoName, date: _dateController.text);
+                                    todoDB.create(title: _todoName, date: _dateController.text.toString());
+                                    // Remettre à vide le champ pour sélectionner une date
                                     _dateController.text = '';
-                                    // Rafraîchir l'affichage des tâches
+                                    // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
                                     fetchTodos();
                                     Navigator.pop(context);
                                   });
@@ -271,6 +284,7 @@ class _TodosPageState extends State<TodosPage> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                             onPressed: () {
+                              // Remettre à vide le champ pour sélectionner une date
                               _dateController.text = '';
                               Navigator.pop(context);
                             },
@@ -307,11 +321,11 @@ class _TodosPageState extends State<TodosPage> {
   
 
   // Fonction pour vérifier si l'utilisateur a entré une date ou non
-  Widget? checkDate(Todo todo) {
+  bool checkDate(Todo todo) {
     if (todo.date != null && todo.date!.isNotEmpty) {
-      return Text(todo.date!);
+      return true;
     }
-    return null;
+    return false;
   }
 
 
@@ -329,16 +343,16 @@ class _TodosPageState extends State<TodosPage> {
             padding: const EdgeInsets.only(left: 10),
             child: TextFormField(
               decoration: const InputDecoration(
-                labelText: "titre",
+                labelText: "Titre de la tâche",
               ),
+              // Afficher un message d'erreur si le champ du titre est vide
               validator: (titleValue) {
                 if (titleValue == null || titleValue.isEmpty) {
-                  titleValue = todo.title;
-                  _todoName = todo.title!;
-                  return null;
+                  return "Titre requis";
                 }
                 return null;
               },
+              // Afficher le titre précédemment entré par l'utilisateur
               initialValue: todo.title,
               onSaved: (titleValue) {
                 _todoName = titleValue!;
@@ -349,13 +363,19 @@ class _TodosPageState extends State<TodosPage> {
           // 2e enfant : la date
           TextField(
             controller: _dateController,
-            decoration: InputDecoration(labelText: todo.date, filled: true),
+            // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
+            decoration: checkDate(todo) == true
+              ? InputDecoration(hintText: todo.date.toString(), filled: true,)
+              : const InputDecoration(labelText: 'Date d\'échéance', filled: true),
+            // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
             readOnly: true,
             onTap: () async {
               final DateTime? dateTime = await showDatePicker(
                   context: context,
                   firstDate: DateTime.now(),
-                  lastDate: DateTime(2100));
+                  lastDate: DateTime(2100),
+              );
+              // La date choisie par l'utilisateur
               if (dateTime != null) {
                 setState(() {
                   _dateController.text = dateTime.toString().split(" ")[0];
@@ -380,8 +400,13 @@ class _TodosPageState extends State<TodosPage> {
                         _formKey.currentState!.save();
                         // Si oui, alors mettre à jour la tâche dans la BDD
                         setState(() {
+                          // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
+                          if (_dateController.text.isEmpty) {
+                            _dateController.text = todo.date.toString();
+                          }
                           // Appel à la méthode update de la BDD pour mettre à jour la tâche
-                          todoDB.update(id: todo.id, title: _todoName, date: _dateController.text);
+                          todoDB.update(id: todo.id, title: _todoName, date: _dateController.text.toString());
+                          // Remettre à vide le champ pour sélectionner une date
                           _dateController.text = '';
                           // Rafraîchir l'affichage des tâches
                           fetchTodos();

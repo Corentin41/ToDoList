@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../database/todo_db.dart';
 import '../model/todo.dart';
@@ -315,6 +317,10 @@ class _TodosPageState extends State<TodosPage> {
   }
 
 
+  TileLayer get openStreetMapTilelayer => TileLayer(
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+  );
 
 
 
@@ -362,6 +368,18 @@ class _TodosPageState extends State<TodosPage> {
                 });
               }
             },
+          ),
+          Container(
+            padding: const EdgeInsets.all(10),
+            height: 240,
+            child: FlutterMap(
+                  options: const MapOptions(
+                      initialCenter: LatLng(1.2878,103.8666),
+                      initialZoom: 11),
+                  children: [
+                    openStreetMapTilelayer
+                  ],
+                ),
           ),
 
           // Les boutons pour valider ou annuler la modification

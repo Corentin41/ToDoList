@@ -269,7 +269,6 @@ class _TodosPageState extends State<TodosPage> {
                                   List<Location> locations = await locationFromAddress(_adress);
                                   _lat = locations.last.latitude.toString();
                                   _lng = locations.last.longitude.toString();
-                                  print("bonsoir, les coord de $_adress sont : lat = $_lat et lng = $_lng");
                                 }
 
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
@@ -278,7 +277,6 @@ class _TodosPageState extends State<TodosPage> {
                                   // Si oui, alors ajout de la tâche dans la BDD
                                   setState(() {
                                     // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                    print("aaaaaaaaaaaaaaaaaaaaaaaaa $_lat nnnnnnnn $_lng");
                                     todoDB.create(title: _todoName, date: _dateController.text, lat: _lat, lng: _lng);
                                     _dateController.text = '';
                                     _lat = '';

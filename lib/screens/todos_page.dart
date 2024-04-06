@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
 
 import '../database/todo_db.dart';
 import '../model/todo.dart';
@@ -25,6 +26,9 @@ class _TodosPageState extends State<TodosPage> {
   // Pour reset le nom de la tâche et la date dans le formulaire de création de tâche
   String _todoName = '';
   String _date = '';
+  String _adress = '';
+  String _lat = '';
+  String _lng = '';
 
   @override
   void initState() {
@@ -239,6 +243,17 @@ class _TodosPageState extends State<TodosPage> {
                         _date = dateValue;
                       },
                     ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Adresse',
+                        ),
+                        onChanged: (adress){
+                          _adress = adress;
+                        },
+                      ),
+                    ),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -249,15 +264,25 @@ class _TodosPageState extends State<TodosPage> {
                           padding: const EdgeInsets.all(10),
                           child: ElevatedButton(
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                              onPressed: () {
+                              onPressed: () async {
+                                if(_adress.isNotEmpty){
+                                  List<Location> locations = await locationFromAddress(_adress);
+                                  _lat = locations.last.latitude.toString();
+                                  _lng = locations.last.longitude.toString();
+                                  print("bonsoir, les coord de $_adress sont : lat = $_lat et lng = $_lng");
+                                }
+
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
                                   // Si oui, alors ajout de la tâche dans la BDD
                                   setState(() {
                                     // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                    todoDB.create(title: _todoName, date: _dateController.text);
+                                    print("aaaaaaaaaaaaaaaaaaaaaaaaa $_lat nnnnnnnn $_lng");
+                                    todoDB.create(title: _todoName, date: _dateController.text, lat: _lat, lng: _lng);
                                     _dateController.text = '';
+                                    _lat = '';
+                                    _lng = '';
                                     // Rafraîchir l'affichage des tâches
                                     fetchTodos();
                                     Navigator.pop(context);
@@ -290,14 +315,6 @@ class _TodosPageState extends State<TodosPage> {
       ),
     );
   }
-
-
-
-
-
-
-
-
 
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
@@ -373,8 +390,8 @@ class _TodosPageState extends State<TodosPage> {
             padding: const EdgeInsets.all(10),
             height: 240,
             child: FlutterMap(
-                  options: const MapOptions(
-                      initialCenter: LatLng(1.2878,103.8666),
+                  options: MapOptions(
+                      initialCenter: LatLng(todo.getDoubleLat(),todo.getDoubleLng()),
                       initialZoom: 11),
                   children: [
                     openStreetMapTilelayer

@@ -12,6 +12,8 @@ class TodoDB {
     await database.execute('CREATE TABLE $tableName '
         '(id INTEGER PRIMARY KEY,'
         ' title TEXT NOT NULL,'
+        ' description TEXT NOT NULL,'
+        ' priority INT NOT NULL,'
         ' isDone INT NOT NULL,'
         ' date TEXT,'
         ' created_at INTEGER NOT NULL DEFAULT (cast(strftime(\'%s\',\'now\') as int)),'
@@ -20,14 +22,14 @@ class TodoDB {
   }
 
   // Fonction qui permet d'insérer des données dans notre BDD
-  Future<int> create({required String title, String? date}) async {
+  Future<int> create({required String title, String? description, int? priority, String? date}) async {
     // Vérifier que la BDD existe
     final database = await DatabaseService().database;
     // Si oui alors on peut insérer des données
     return await database.rawInsert(
-      '''INSERT INTO $tableName (title,isDone,date,created_at) VALUES (?,?,?,?)''',
-      // Par défaut isDone est à false car la tâche créée n'est pas terminée
-      [title, 0, date, DateTime.now().millisecondsSinceEpoch],
+      '''INSERT INTO $tableName (title,description,priority,isDone,date,created_at) VALUES (?,?,?,?,?,?)''',
+      // Par défaut isDone est à false (valeur 0) car la tâche créée n'est pas terminée
+      [title, description, priority, 0, date, DateTime.now().millisecondsSinceEpoch],
     );
   }
 
@@ -48,13 +50,15 @@ class TodoDB {
   }
 
   // Fonction pour modifier une donnée dans la BDD à partir d'un id
-  Future<int> update({required int id, String? title, int? isDone, String? date}) async {
+  Future<int> update({required int id, String? title, String? description, int? priority, int? isDone, String? date}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,
         {
           // Faire une vérification sur l'existence de la donnée
           if (title != null) 'title' : title,
+          if (description != null) 'description' : description,
+          if (priority != null) 'priority' : priority,
           if (isDone != null) 'isDone' : isDone,
           if (date != null) 'date' : date,
           'updated_at' : DateTime.now().millisecondsSinceEpoch,

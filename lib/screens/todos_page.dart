@@ -23,6 +23,10 @@ class _TodosPageState extends State<TodosPage> {
 
   // Pour garder en mémoire le titre de la tâche
   String _todoName = '';
+  String _todoDesc = '';
+  int _todoPriority = 0;
+
+  bool click = true;
 
   @override
   void initState() {
@@ -69,18 +73,29 @@ class _TodosPageState extends State<TodosPage> {
                       // Identifier chaque tâche avec son index
                       final todo = todos[index];
 
+
+
+
                       // Affichage de chaque tâche
                       return Container(
                         margin: const EdgeInsets.all(5),
 
-                        // Si la tâche est terminée alors elle est grisée
+                        // Couleur de fond des tâches
                         child: Card(
-                          color: todo.isDone == 0
-                          ? Colors.lime
-                          : Colors.grey,
+                          color: todo.priority == 1
+                          ? todo.isDone == 0
+                            // Tâche prioritaire en cours => orange
+                            ? Colors.orange
+                            // Tâche prioritaire terminée => grey
+                            : Colors.grey
+                          : todo.isDone == 0
+                            // Tâche en cours => lime
+                            ? Colors.lime
+                            // Tâche terminée => grey
+                            : Colors.grey,
+                          // Si la tâche est terminée alors elle est grisée
 
                           child: ListTile(
-
                             // Au click sur la tâche on change son état (terminée = 1 / en cours = 0)
                             onTap: () {
                               setState(() {
@@ -114,7 +129,13 @@ class _TodosPageState extends State<TodosPage> {
 
                             // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
                             subtitle: checkDate(todo) == true
-                            ? Text(todo.date!)
+                            ? Text(
+                                todo.date!,
+                              style: TextStyle(
+                              // Si la tâche est terminée (isDone à 1) alors barrer le titre
+                              decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
+                              ),
+                            )
                             : null,
 
                             // Affichage de la date : bouton modifier et bouton supprimer
@@ -142,12 +163,13 @@ class _TodosPageState extends State<TodosPage> {
                                             isDismissible: false,
                                             builder: (BuildContext context) {
                                               return updateTodo(todo);
+                                              return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+                                                return updateTodo(todo);
+                                              });
                                             });
                                       },
                                     ),
                                   ),
-
-
 
                                   // 2e enfant : supprimer la tâche
                                   Container(
@@ -187,116 +209,173 @@ class _TodosPageState extends State<TodosPage> {
 
 
 
-      // Le bouton pour ajouter une nouvelle tâche
+
+
+
+
+      // Ajouter une nouvelle tâche
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         child: const Icon(Icons.add, color: Colors.black),
         onPressed: () {
           // Au click afficher le BottomSheet pour créer une tâche
           showModalBottomSheet(
-            constraints: const BoxConstraints(maxWidth: double.maxFinite),
-            context: context,
-            // Pour quitter l'ajout d'une tâche il faut cliquer sur le bouton annuler
-            isDismissible: false,
-            builder: (BuildContext context) {
-              return Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Champ pour entrer le nom de la tâche
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: TextFormField(
-                        decoration: const InputDecoration(labelText: 'Titre de la tâche'),
-                        // Afficher un message d'erreur si le champ du titre est vide
-                        validator: (titleValue) {
-                          if (titleValue == null || titleValue.isEmpty) {
-                            return 'Titre requis';
-                          }
-                          return null;
-                        },
-                        // Sauvegarder le titre de la tâche
-                        onSaved: (titleValue) {
-                          _todoName = titleValue!;
-                        },
-                      ),
-                    ),
-
-                    // Champ pour entrer la date
-                    TextField(
-                      controller: _dateController,
-                      decoration: const InputDecoration(
-                          labelText: 'Date d\'échéance',
-                          filled: true,
-                      ),
-                      // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
-                      readOnly: true,
-                      onTap: () async {
-                        final DateTime? dateTime = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime(2100),
-                        );
-                        // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
-                        if (dateTime != null) {
-                          setState(() {
-                            _dateController.text = dateTime.toString().split(" ")[0];
-                          });
-                        }
-                      },
-                      // Sauvegarder la date de la tâche
-                      onChanged: (dateValue) {
-                        _dateController.text = dateValue;
-                      },
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-
-                        // Bouton pour ajouter la tâche
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                              onPressed: () {
-                                // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-                                  // Si oui, alors ajout de la tâche dans la BDD
-                                  setState(() {
-                                    // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                    todoDB.create(title: _todoName, date: _dateController.text.toString());
-                                    // Remettre à vide le champ pour sélectionner une date
-                                    _dateController.text = '';
-                                    // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
-                                    fetchTodos();
-                                    Navigator.pop(context);
-                                  });
+              constraints: const BoxConstraints(maxWidth: double.maxFinite),
+              context: context,
+              // Pour quitter l'ajout d'une tâche, il faut cliquer sur le bouton annuler
+              isDismissible: false,
+              builder: (BuildContext context) {
+                // Rendre le showModalBottomSheet Stateful pour modifier l'icône priority
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Champ pour entrer le nom de la tâche
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: TextFormField(
+                              decoration: const InputDecoration(labelText: 'Titre de la tâche'),
+                              // Afficher un message d'erreur si le champ du titre est vide
+                              validator: (titleValue) {
+                                if (titleValue == null || titleValue.isEmpty) {
+                                  return 'Titre requis';
                                 }
+                                return null;
                               },
-                              child: const Text('ajouter', style: TextStyle(color: Colors.white),)),
-                        ),
-
-                        // Bouton pour fermer le showModalBottomSheet
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                            onPressed: () {
-                              // Remettre à vide le champ pour sélectionner une date
-                              _dateController.text = '';
-                              Navigator.pop(context);
-                            },
-                            child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                              // Sauvegarder le titre de la tâche
+                              onSaved: (titleValue) {
+                                _todoName = titleValue!;
+                              },
+                            ),
                           ),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              );
-            }
+
+                          // Champ pour entrer la description de la tâche
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: TextFormField(
+                              minLines: 5,
+                              maxLines: 10,
+                              decoration: const InputDecoration(labelText: 'Description de la tâche'),
+                              // Sauvegarder la description de la tâche
+                              onSaved: (titleValue) {
+                                _todoDesc = titleValue!;
+                              },
+                            ),
+                          ),
+
+                          // Champ pour entrer la date
+                          TextField(
+                            controller: _dateController,
+                            decoration: const InputDecoration(
+                              labelText: 'Date d\'échéance',
+                              filled: true,
+                            ),
+                            // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
+                            readOnly: true,
+                            onTap: () async {
+                              final DateTime? dateTime = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2100),
+                              );
+                              // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
+                              if (dateTime != null) {
+                                setState(() {
+                                  _dateController.text = dateTime.toString().split(" ")[0];
+                                });
+                              }
+                            },
+                            // Sauvegarder la date de la tâche
+                            onChanged: (dateValue) {
+                              _dateController.text = dateValue;
+                            },
+                          ),
+
+
+                          // Définir le niveau de priorité de la tâche
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Row(
+                              children: [
+                                const Text(
+                                    "Définir en tant que tâche prioritaire : ",
+                                    style: TextStyle(fontWeight: FontWeight.bold)),
+
+                                IconButton(
+                                  // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
+                                  icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
+                                      color: Colors.blueAccent
+                                  ),
+                                  // Au click, changer le niveau de priorité (1 pour prioritaire et 0 pour non prioritaire)
+                                  onPressed: () {
+                                    setState(() {
+                                      if (_todoPriority == 0) {
+                                        _todoPriority = 1;
+                                      } else {
+                                        _todoPriority = 0;
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+
+
+                          // Boutons pour ajouter une tâche ou annuler l'ajout
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+
+                              // Bouton pour ajouter la tâche
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                    onPressed: () {
+                                      // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
+                                      if (_formKey.currentState!.validate()) {
+                                        _formKey.currentState!.save();
+                                        // Si oui, alors ajout de la tâche dans la BDD
+                                        setState(() {
+                                          // Appel à la méthode create de la BDD pour enregistrer la tâche
+                                          todoDB.create(title: _todoName, description: _todoDesc, priority: _todoPriority, date: _dateController.text.toString());
+                                          // Remettre à vide les champs
+                                          _dateController.text = '';
+                                          _todoPriority = 0;
+                                          // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
+                                          fetchTodos();
+                                          Navigator.pop(context);
+                                        });
+                                      }
+                                    },
+                                    child: const Text('ajouter', style: TextStyle(color: Colors.white),)),
+                              ),
+
+                              // Bouton pour fermer le showModalBottomSheet
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  onPressed: () {
+                                    // Remettre à vide les champs
+                                    _dateController.text = '';
+                                    _todoPriority = 0;
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  } ,
+                );
+              }
           );
         },
       ),
@@ -333,107 +412,159 @@ class _TodosPageState extends State<TodosPage> {
 
 
   // Fonction pour modifier une tâche
-  Form updateTodo(Todo todo) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          // 1er enfant : titre de la tâche
-          Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: TextFormField(
-              decoration: const InputDecoration(
-                labelText: "Titre de la tâche",
+  StatefulBuilder updateTodo(Todo todo) {
+    // Initialiser la valeur de priorité en fonction de la priorité stockée en BDD
+    _todoPriority = todo.priority;
+    // Retourner un StatefulBuilder pour mettre à jour l'icône seulement dans le Form et pas dans toute la page
+    return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+      return Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // Champ pour modifier le titre de la tâche
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: TextFormField(
+                decoration: const InputDecoration(
+                  labelText: "Titre de la tâche",
+                ),
+                // Afficher un message d'erreur si le champ du titre est vide
+                validator: (titleValue) {
+                  if (titleValue == null || titleValue.isEmpty) {
+                    return "Titre requis";
+                  }
+                  return null;
+                },
+                // Afficher le titre précédemment entré par l'utilisateur
+                initialValue: todo.title,
+                onSaved: (titleValue) {
+                  _todoName = titleValue!;
+                },
               ),
-              // Afficher un message d'erreur si le champ du titre est vide
-              validator: (titleValue) {
-                if (titleValue == null || titleValue.isEmpty) {
-                  return "Titre requis";
-                }
-                return null;
-              },
-              // Afficher le titre précédemment entré par l'utilisateur
-              initialValue: todo.title,
-              onSaved: (titleValue) {
-                _todoName = titleValue!;
-              },
             ),
-          ),
 
-          // 2e enfant : la date
-          TextField(
-            controller: _dateController,
-            // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
-            decoration: checkDate(todo) == true
-              ? InputDecoration(hintText: todo.date.toString(), filled: true,)
-              : const InputDecoration(labelText: 'Date d\'échéance', filled: true),
-            // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
-            readOnly: true,
-            onTap: () async {
-              final DateTime? dateTime = await showDatePicker(
+            // Champ pour modifier la description de la tâche
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: TextFormField(
+                minLines: 5,
+                maxLines: 10,
+                decoration: const InputDecoration(labelText: 'Description de la tâche'),
+                // Afficher la description précédemment entrée par l'utilisateur
+                initialValue: todo.description,
+                onSaved: (titleValue) {
+                  _todoDesc = titleValue!;
+                },
+              ),
+            ),
+
+            // Champ pour modifier la date
+            TextField(
+              controller: _dateController,
+              // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
+              decoration: checkDate(todo) == true
+                  ? InputDecoration(hintText: todo.date.toString(), filled: true,)
+                  : const InputDecoration(labelText: 'Date d\'échéance', filled: true),
+              // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
+              readOnly: true,
+              onTap: () async {
+                final DateTime? dateTime = await showDatePicker(
                   context: context,
                   firstDate: DateTime.now(),
                   lastDate: DateTime(2100),
-              );
-              // La date choisie par l'utilisateur
-              if (dateTime != null) {
-                setState(() {
-                  _dateController.text = dateTime.toString().split(" ")[0];
-                });
-              }
-            },
-          ),
+                );
+                // La date choisie par l'utilisateur
+                if (dateTime != null) {
+                  setState(() {
+                    _dateController.text = dateTime.toString().split(" ")[0];
+                  });
+                }
+              },
+            ),
 
-          // Les boutons pour valider ou annuler la modification
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            // Champ pour modifier le niveau de priorité de la tâche
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Row(
+                children: [
+                  const Text(
+                      "Changer le niveau de priorité de la tâche : ",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
 
-              // Bouton pour confirmer la modification de la tâche
-              Container(
-                padding: const EdgeInsets.all(10),
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                  IconButton(
+                    // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
+                    icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
+                        color: Colors.blueAccent
+                    ),
+                    // Au click, changer le niveau de priorité (1 pour prioritaire et 0 pour non prioritaire)
                     onPressed: () {
-                      // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        // Si oui, alors mettre à jour la tâche dans la BDD
-                        setState(() {
-                          // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
-                          if (_dateController.text.isEmpty) {
-                            _dateController.text = todo.date.toString();
-                          }
-                          // Appel à la méthode update de la BDD pour mettre à jour la tâche
-                          todoDB.update(id: todo.id, title: _todoName, date: _dateController.text.toString());
-                          // Remettre à vide le champ pour sélectionner une date
-                          _dateController.text = '';
-                          // Rafraîchir l'affichage des tâches
-                          fetchTodos();
-                          Navigator.pop(context);
-                        });
-                      }
+                      setState(() {
+                        if (_todoPriority == 0) {
+                          _todoPriority = 1;
+                        } else {
+                          _todoPriority = 0;
+                        }
+                      });
                     },
-                    child: const Text('modifier', style: TextStyle(color: Colors.white),)),
+                  ),
+                ],
               ),
+            ),
 
-              // Bouton pour fermer le showModalBottomSheet et annuler la modification
-              Container(
-                padding: const EdgeInsets.all(10),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () {
-                    _dateController.text = '';
-                    Navigator.pop(context);
-                  },
-                  child: const Text('annuler', style: TextStyle(color: Colors.white),),
+            // Les boutons pour valider ou annuler la modification
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+
+                // Bouton pour confirmer la modification de la tâche
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      onPressed: () {
+                        // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          // Si oui, alors mettre à jour la tâche dans la BDD
+                          setState(() {
+                            // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
+                            if (_dateController.text.isEmpty) {
+                              _dateController.text = todo.date.toString();
+                            }
+                            // Appel à la méthode update de la BDD pour mettre à jour la tâche
+                            todoDB.update(id: todo.id, title: _todoName, description: _todoDesc, priority: _todoPriority, date: _dateController.text.toString());
+                            // Remettre à vide les champs
+                            _dateController.text = '';
+                            _todoPriority = 0;
+                            // Rafraîchir l'affichage des tâches
+                            fetchTodos();
+                            Navigator.pop(context);
+                          });
+                        }
+                      },
+                      child: const Text('modifier', style: TextStyle(color: Colors.white),)),
                 ),
-              )
-            ],
-          )
-        ],
-      ),
-    );
+
+                // Bouton pour fermer le showModalBottomSheet et annuler la modification
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () {
+                      // Remettre à vide les champs
+                      _dateController.text = '';
+                      _todoPriority = 0;
+                      Navigator.pop(context);
+                    },
+                    child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+      );
+    });
   }
 
 

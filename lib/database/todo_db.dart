@@ -34,10 +34,10 @@ class TodoDB {
   }
 
   // Fonction pour récupérer les données de notre BDD (par date de création)
-  Future<List<Todo>> fetchAll() async {
+  Future<List<Todo>> fetchAll(String sortPref) async {
     final database = await DatabaseService().database;
     final todos = await database.rawQuery(
-        '''SELECT * FROM $tableName ORDER BY COALESCE(updated_at,created_at)'''
+        '''SELECT * FROM $tableName ORDER BY isDone, $sortPref, created_at'''
     );
     return todos.map((todo) => Todo.fromSqfliteDatabase(todo)).toList();
   }

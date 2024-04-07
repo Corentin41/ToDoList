@@ -27,7 +27,7 @@ class Todo {
     id: todo['id']?.toInt() ?? 0,
     title: todo['title'] ?? '',
     description: todo['description'] ?? '',
-    priority: todo['priority']?.toInt() ?? 0,
+    priority: todo['priority']?.toInt() ?? 2,
     isDone: todo['isDone']?.toInt() ?? 0,
     date: todo['date'] ?? '',
     createdAt: DateTime.fromMillisecondsSinceEpoch(todo['created_at']).toIso8601String(),

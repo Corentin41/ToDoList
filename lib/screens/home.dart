@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:todolist/model/todo.dart';
 import 'package:todolist/widgets/todo_item.dart';
 
@@ -15,7 +15,7 @@ class _HomeState extends State<Home> {
   String _name = '';
   String _date = '';
 
-  List<ToDo> toDoList = [];
+  List<Todo> toDoList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class _HomeState extends State<Home> {
                           ),
 
                           // Appel aux différentes méthodes créées dans todo_item
-                          for (ToDo todoo in toDoList)
+                          for (Todo todoo in toDoList)
                             TodoItem(
                               todo: todoo,
                               onToDoChanged: _handleToDoChange,
@@ -138,10 +138,10 @@ class _HomeState extends State<Home> {
                                               // _name contiendra la valeur du champ de texte nom, _email la valeur du champ de texte email, etc.
 
                                               setState(() {
-                                                int l = toDoList.length + 1;
-                                                ToDo newToDo = ToDo(
-                                                    id: l.toString(),
-                                                    todoTitle: _name,
+                                                int todoID = toDoList.length + 1;
+                                                Todo newToDo = Todo(
+                                                    id: todoID,
+                                                    title: _name,
                                                     date: _dateController.text);
                                                 toDoList.add(newToDo);
                                                 _dateController.text = '';
@@ -178,7 +178,7 @@ class _HomeState extends State<Home> {
         ));
   }
 
-  void _handleToDoChange(ToDo todo) {
+  void _handleToDoChange(Todo todo) {
     setState(() {
       todo.isDone = !todo.isDone;
     });
@@ -190,7 +190,7 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void _editToDoItem(ToDo todo) {
+  void _editToDoItem(Todo todo) {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
@@ -213,7 +213,7 @@ class _HomeState extends State<Home> {
 
 
   // Editer une tâche
-  Form _buildEditForm(ToDo todo) {
+  Form _buildEditForm(Todo todo) {
     return Form(
       key: _formKey,
       child: Column(
@@ -228,13 +228,13 @@ class _HomeState extends State<Home> {
               ),
               validator: (titleValue) {
                 if (titleValue == null || titleValue.isEmpty) {
-                  titleValue = todo.todoTitle;
-                  _name = todo.todoTitle!;
+                  titleValue = todo.title;
+                  _name = todo.title!;
                   return null;
                 }
                 return null;
               },
-              initialValue: todo.todoTitle,
+              initialValue: todo.title,
               onSaved: (titleValue) {
                 _name = titleValue!;
               },
@@ -274,11 +274,11 @@ class _HomeState extends State<Home> {
                       _formKey.currentState!.save();
 
                       setState(() {
-                        Iterable<ToDo> item =
+                        Iterable<Todo> item =
                         toDoList.where((item) => item.id == todo.id);
 
-                        if (_name != todo.todoTitle!) {
-                          item.first.todoTitle = _name;
+                        if (_name != todo.title!) {
+                          item.first.title = _name;
                         }
 
                         print(_dateController.text);
@@ -317,4 +317,4 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-}
+}*/

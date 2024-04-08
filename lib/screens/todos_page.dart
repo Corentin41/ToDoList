@@ -33,7 +33,7 @@ class _TodosPageState extends State<TodosPage> {
   String _todoDesc = '';
   // Par défaut, les tâches sont secondaires (priorité niv 2)
   int _todoPriority = 2;
-  String _date = '';
+  // Champs pour l'adresse
   String _adress = '';
   String _lat = '';
   String _lng = '';
@@ -299,31 +299,35 @@ class _TodosPageState extends State<TodosPage> {
 
       // Ajouter une nouvelle tâche
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add, color: Colors.black),
-        onPressed: () {
-          // Au click afficher le BottomSheet pour créer une tâche
-          showModalBottomSheet(
-            constraints: const BoxConstraints(maxWidth: double.maxFinite),
-            context: context,
-            builder: (BuildContext context) {
-              return Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Champ pour entrer le nom de la tâche
-                    Padding(
-                      padding: EdgeInsets.only(left: 10),
-                      child: TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Nom',
-                        ),
-                        validator: (titleValue) {
-                          if (titleValue == null || titleValue.isEmpty) {
-                            return 'Titre requis';
-                          }
+          backgroundColor: Colors.green,
+          child: const Icon(Icons.add, color: Colors.black),
+          onPressed: () {
+            // Au click afficher le BottomSheet pour créer une tâche
+            showModalBottomSheet(
+              constraints: const BoxConstraints(maxWidth: double.maxFinite),
+              context: context,
+              // Pour quitter l'ajout d'une tâche il faut cliquer sur le bouton annuler
+              isDismissible: false,
+              builder: (BuildContext context) {
+                return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+                  return SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          // Champ pour entrer le nom de la tâche
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: TextFormField(
+                              decoration: const InputDecoration(
+                                labelText: 'Nom',
+                              ),
+                              validator: (titleValue) {
+                                if (titleValue == null || titleValue.isEmpty) {
+                                  return 'Titre requis';
+                                }
                                 return null;
-                          },
+                              },
                               // Sauvegarder le titre de la tâche
                               onSaved: (titleValue) {
                                 _todoName = titleValue!;
@@ -335,8 +339,8 @@ class _TodosPageState extends State<TodosPage> {
                           Padding(
                             padding: const EdgeInsets.only(left: 10),
                             child: TextFormField(
-                              minLines: 5,
-                              maxLines: 10,
+                              minLines: 3,
+                              maxLines: 5,
                               decoration: const InputDecoration(labelText: 'Description de la tâche'),
                               // Sauvegarder la description de la tâche
                               onSaved: (titleValue) {
@@ -372,13 +376,13 @@ class _TodosPageState extends State<TodosPage> {
                               _dateController.text = dateValue;
                             },
                           ),
-                          
-                          
+
+
                           // Champ pour l'adresse
                           Padding(
                             padding: EdgeInsets.only(left: 10),
                             child: TextFormField(
-                             decoration: const InputDecoration(labelText: 'Adresse'),
+                              decoration: const InputDecoration(labelText: 'Adresse'),
                               onChanged: (adress){
                                 _adress = adress;
                               },
@@ -416,7 +420,7 @@ class _TodosPageState extends State<TodosPage> {
                           ),
 
 
-                          // Boutons pour ajouter une tâche ou annuler l'ajout 
+                          // Boutons pour ajouter une tâche ou annuler l'ajout
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -426,15 +430,16 @@ class _TodosPageState extends State<TodosPage> {
                                 padding: const EdgeInsets.all(10),
                                 child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                    onPressed: () {
-                                      
+                                    onPressed: () async {
+
                                       // Pour l'adresse
-                                      if(_adress.isNotEmpty){
+                                      if(_adress.isNotEmpty) {
                                         List<Location> locations = await locationFromAddress(_adress);
                                         _lat = locations.last.latitude.toString();
                                         _lng = locations.last.longitude.toString();
+                                        print(_lat);
                                       }
-                                      
+
                                       // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                       if (_formKey.currentState!.validate()) {
                                         _formKey.currentState!.save();
@@ -442,14 +447,14 @@ class _TodosPageState extends State<TodosPage> {
                                         setState(() {
                                           // Appel à la méthode create de la BDD pour enregistrer la tâche
                                           todoDB.create(
-                                            title: _todoName, 
-                                            description: _todoDesc, 
-                                            priority: _todoPriority, 
-                                            date: _dateController.text.toString(),
-                                            lat: _lat, 
-                                            lng: _lng
+                                              title: _todoName,
+                                              description: _todoDesc,
+                                              priority: _todoPriority,
+                                              date: _dateController.text.toString(),
+                                              lat: _lat,
+                                              lng: _lng
                                           );
-                                    
+
                                           // Remettre à vide les champs
                                           _dateController.text = '';
                                           _todoPriority = 2;
@@ -482,12 +487,13 @@ class _TodosPageState extends State<TodosPage> {
                           )
                         ],
                       ),
-                    );
-                  } ,
+                    ),
+                  );
+                }
                 );
-              }
-          );
-        },
+              },
+            );
+          }
       ),
     );
   }
@@ -517,80 +523,87 @@ class _TodosPageState extends State<TodosPage> {
 
 
 
+
+
+
+
+
+
   // Fonction pour modifier une tâche
   StatefulBuilder updateTodo(Todo todo) {
     // Initialiser la valeur de priorité en fonction de la priorité stockée en BDD
     _todoPriority = todo.priority;
     // Retourner un StatefulBuilder pour mettre à jour l'icône seulement dans le Form et pas dans toute la page
     return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
-      return Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Champ pour modifier le titre de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Titre de la tâche",
+      return SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Champ pour modifier le titre de la tâche
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: "Titre de la tâche",
+                  ),
+                  // Afficher un message d'erreur si le champ du titre est vide
+                  validator: (titleValue) {
+                    if (titleValue == null || titleValue.isEmpty) {
+                      return "Titre requis";
+                    }
+                    return null;
+                  },
+                  // Afficher le titre précédemment entré par l'utilisateur
+                  initialValue: todo.title,
+                  onSaved: (titleValue) {
+                    _todoName = titleValue!;
+                  },
                 ),
-                // Afficher un message d'erreur si le champ du titre est vide
-                validator: (titleValue) {
-                  if (titleValue == null || titleValue.isEmpty) {
-                    return "Titre requis";
+              ),
+
+              // Champ pour modifier la description de la tâche
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: TextFormField(
+                  minLines: 3,
+                  maxLines: 5,
+                  decoration: const InputDecoration(labelText: 'Description de la tâche'),
+                  // Afficher la description précédemment entrée par l'utilisateur
+                  initialValue: todo.description,
+                  onSaved: (titleValue) {
+                    _todoDesc = titleValue!;
+                  },
+                ),
+              ),
+
+              // Champ pour modifier la date
+              TextField(
+                controller: _dateController,
+                // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
+                decoration: checkDate(todo) == true
+                    ? InputDecoration(hintText: todo.date.toString(), filled: true,)
+                    : const InputDecoration(labelText: 'Date d\'échéance', filled: true),
+                // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
+                readOnly: true,
+                onTap: () async {
+                  final DateTime? dateTime = await showDatePicker(
+                      context: context,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100));
+                  if (dateTime != null) {
+                    setState(() {
+                      _dateController.text = dateTime.toString().split(" ")[0];
+                    });
                   }
-                  return null;
-                },
-                // Afficher le titre précédemment entré par l'utilisateur
-                initialValue: todo.title,
-                onSaved: (titleValue) {
-                  _todoName = titleValue!;
                 },
               ),
-            ),
 
-            // Champ pour modifier la description de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: TextFormField(
-                minLines: 5,
-                maxLines: 10,
-                decoration: const InputDecoration(labelText: 'Description de la tâche'),
-                // Afficher la description précédemment entrée par l'utilisateur
-                initialValue: todo.description,
-                onSaved: (titleValue) {
-                  _todoDesc = titleValue!;
-                },
-              ),
-            ),
-
-            // Champ pour modifier la date
-            TextField(
-              controller: _dateController,
-              // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
-              decoration: checkDate(todo) == true
-                  ? InputDecoration(hintText: todo.date.toString(), filled: true,)
-                  : const InputDecoration(labelText: 'Date d\'échéance', filled: true),
-              // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
-              readOnly: true,
-              onTap: () async {
-                final DateTime? dateTime = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100));
-              if (dateTime != null) {
-                  setState(() {
-                    _dateController.text = dateTime.toString().split(" ")[0];
-                  });
-                }
-            },
-          ),
-            
-          // Adresse
-          todo.lat!.isNotEmpty ? Container(
-            padding: const EdgeInsets.all(10),
-            height: 240,
-            child: FlutterMap(
+              // Adresse
+              todo.lat!.isNotEmpty ? Container(
+                padding: const EdgeInsets.all(10),
+                height: 240,
+                child: FlutterMap(
                   options: MapOptions(
                       initialCenter: LatLng(todo.getDoubleLat(),todo.getDoubleLng()),
                       initialZoom: 11),
@@ -598,94 +611,99 @@ class _TodosPageState extends State<TodosPage> {
                     openStreetMapTilelayer
                   ],
                 ),
-          ) : Container(
+              ) : Container(
                   padding: const EdgeInsets.all(10),
                   height: 240,
                   child: Text("pas d'adresse renseignée")
-          ),
-            
-            
-
-            // Champ pour modifier le niveau de priorité de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Row(
-                children: [
-                  const Text(
-                      "Changer le niveau de priorité de la tâche : ",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-
-                  IconButton(
-                    // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
-                    icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
-                        color: Colors.blueAccent
-                    ),
-                    // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
-                    onPressed: () {
-                      setState(() {
-                        if (_todoPriority == 2) {
-                          _todoPriority = 1;
-                        } else {
-                          _todoPriority = 2;
-                        }
-                      });
-                    },
-                  ),
-                ],
               ),
-            ),
 
-            // Les boutons pour valider ou annuler la modification
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
 
-                // Bouton pour confirmer la modification de la tâche
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+
+              // Champ pour modifier le niveau de priorité de la tâche
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Row(
+                  children: [
+                    const Text(
+                        "Changer le niveau de priorité de la tâche : ",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+
+                    IconButton(
+                      // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
+                      icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
+                          color: Colors.blueAccent
+                      ),
+                      // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
                       onPressed: () {
-                        // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          // Si oui, alors mettre à jour la tâche dans la BDD
-                          setState(() {
-                            // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
-                            if (_dateController.text.isEmpty) {
-                              _dateController.text = todo.date.toString();
-                            }
-                            // Appel à la méthode update de la BDD pour mettre à jour la tâche
-                            todoDB.update(id: todo.id, title: _todoName, description: _todoDesc, priority: _todoPriority, date: _dateController.text.toString());
-                            // Remettre à vide les champs
-                            _dateController.text = '';
+                        setState(() {
+                          if (_todoPriority == 2) {
+                            _todoPriority = 1;
+                          } else {
                             _todoPriority = 2;
-                            // Rafraîchir l'affichage des tâches
-                            fetchTodos();
-                            Navigator.pop(context);
-                          });
-                        }
+                          }
+                        });
                       },
-                      child: const Text('modifier', style: TextStyle(color: Colors.white),)),
+                    ),
+                  ],
                 ),
+              ),
 
-                // Bouton pour fermer le showModalBottomSheet et annuler la modification
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () {
-                      // Remettre à vide les champs
-                      _dateController.text = '';
-                      _todoPriority = 2;
-                      Navigator.pop(context);
-                    },
-                    child: const Text('annuler', style: TextStyle(color: Colors.white),),
+              // Les boutons pour valider ou annuler la modification
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  // Bouton pour confirmer la modification de la tâche
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                        onPressed: () {
+                          // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            // Si oui, alors mettre à jour la tâche dans la BDD
+                            setState(() {
+                              // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
+                              if (_dateController.text.isEmpty) {
+                                _dateController.text = todo.date.toString();
+                              }
+                              // Appel à la méthode update de la BDD pour mettre à jour la tâche
+                              todoDB.update(id: todo.id, title: _todoName, description: _todoDesc, priority: _todoPriority, date: _dateController.text.toString());
+                              // Remettre à vide les champs
+                              _dateController.text = '';
+                              _todoPriority = 2;
+                              _lat = '';
+                              _lng = '';
+                              // Rafraîchir l'affichage des tâches
+                              fetchTodos();
+                              Navigator.pop(context);
+                            });
+                          }
+                        },
+                        child: const Text('modifier', style: TextStyle(color: Colors.white),)),
                   ),
-                )
-              ],
-            )
-          ],
+
+                  // Bouton pour fermer le showModalBottomSheet et annuler la modification
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () {
+                        // Remettre à vide les champs
+                        _dateController.text = '';
+                        _todoPriority = 2;
+                        _lat = '';
+                        _lng = '';
+                        Navigator.pop(context);
+                      },
+                      child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       );
     });

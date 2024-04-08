@@ -16,20 +16,22 @@ class TodoDB {
         ' priority INT NOT NULL,'
         ' isDone INT NOT NULL,'
         ' date TEXT,'
+        ' lat TEXT,'
+        ' lng TEXT,'
         ' created_at INTEGER NOT NULL DEFAULT (cast(strftime(\'%s\',\'now\') as int)),'
         ' updated_at INTEGER'
         ')');
   }
 
   // Fonction qui permet d'insérer des données dans notre BDD
-  Future<int> create({required String title, String? description, int? priority, String? date}) async {
+  Future<int> create({required String title, String? description, int? priority, String? date, String? lat, String? lng}) async {
     // Vérifier que la BDD existe
     final database = await DatabaseService().database;
     // Si oui alors on peut insérer des données
     return await database.rawInsert(
-      '''INSERT INTO $tableName (title,description,priority,isDone,date,created_at) VALUES (?,?,?,?,?,?)''',
+      '''INSERT INTO $tableName (title, description, priority, isDone, date, lat, lng, created_at) VALUES (?,?,?,?,?,?,?,?)''',
       // Par défaut isDone est à false (valeur 0) car la tâche créée n'est pas terminée
-      [title, description, priority, 0, date, DateTime.now().millisecondsSinceEpoch],
+      [title, description, priority, 0, date, lat, lng, DateTime.now().millisecondsSinceEpoch],
     );
   }
 

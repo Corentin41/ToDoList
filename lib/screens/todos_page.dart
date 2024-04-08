@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/todo_db.dart';
@@ -30,14 +33,16 @@ class _TodosPageState extends State<TodosPage> {
   String _todoDesc = '';
   // Par défaut, les tâches sont secondaires (priorité niv 2)
   int _todoPriority = 2;
-
-
+  String _date = '';
+  String _adress = '';
+  String _lat = '';
+  String _lng = '';
+  
   // Liste qui contient les titres pour trier la liste des tâches
   List<String> myPrefs = ['Priorité','Date de création','Date d\'échéance'];
   // Initialiser le choix du tri de la liste à niveau de Priorité
   String _sortPref = ''; // Pour l'affichage
   String _orderBy = ''; // Pour la BDD
-
 
   @override
   void initState() {
@@ -299,30 +304,26 @@ class _TodosPageState extends State<TodosPage> {
         onPressed: () {
           // Au click afficher le BottomSheet pour créer une tâche
           showModalBottomSheet(
-              constraints: const BoxConstraints(maxWidth: double.maxFinite),
-              context: context,
-              // Pour quitter l'ajout d'une tâche, il faut cliquer sur le bouton annuler
-              isDismissible: false,
-              builder: (BuildContext context) {
-                // Rendre le showModalBottomSheet Stateful pour modifier l'icône priority
-                return StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                    return Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // Champ pour entrer le nom de la tâche
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: TextFormField(
-                              decoration: const InputDecoration(labelText: 'Titre de la tâche'),
-                              // Afficher un message d'erreur si le champ du titre est vide
-                              validator: (titleValue) {
-                                if (titleValue == null || titleValue.isEmpty) {
-                                  return 'Titre requis';
-                                }
+            constraints: const BoxConstraints(maxWidth: double.maxFinite),
+            context: context,
+            builder: (BuildContext context) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    // Champ pour entrer le nom de la tâche
+                    Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Nom',
+                        ),
+                        validator: (titleValue) {
+                          if (titleValue == null || titleValue.isEmpty) {
+                            return 'Titre requis';
+                          }
                                 return null;
-                              },
+                          },
                               // Sauvegarder le titre de la tâche
                               onSaved: (titleValue) {
                                 _todoName = titleValue!;
@@ -371,6 +372,18 @@ class _TodosPageState extends State<TodosPage> {
                               _dateController.text = dateValue;
                             },
                           ),
+                          
+                          
+                          // Champ pour l'adresse
+                          Padding(
+                            padding: EdgeInsets.only(left: 10),
+                            child: TextFormField(
+                             decoration: const InputDecoration(labelText: 'Adresse'),
+                              onChanged: (adress){
+                                _adress = adress;
+                              },
+                            ),
+                          ),
 
 
                           // Définir le niveau de priorité de la tâche
@@ -403,7 +416,7 @@ class _TodosPageState extends State<TodosPage> {
                           ),
 
 
-                          // Boutons pour ajouter une tâche ou annuler l'ajout
+                          // Boutons pour ajouter une tâche ou annuler l'ajout 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -414,16 +427,34 @@ class _TodosPageState extends State<TodosPage> {
                                 child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                                     onPressed: () {
+                                      
+                                      // Pour l'adresse
+                                      if(_adress.isNotEmpty){
+                                        List<Location> locations = await locationFromAddress(_adress);
+                                        _lat = locations.last.latitude.toString();
+                                        _lng = locations.last.longitude.toString();
+                                      }
+                                      
                                       // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                       if (_formKey.currentState!.validate()) {
                                         _formKey.currentState!.save();
                                         // Si oui, alors ajout de la tâche dans la BDD
                                         setState(() {
                                           // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                          todoDB.create(title: _todoName, description: _todoDesc, priority: _todoPriority, date: _dateController.text.toString());
+                                          todoDB.create(
+                                            title: _todoName, 
+                                            description: _todoDesc, 
+                                            priority: _todoPriority, 
+                                            date: _dateController.text.toString(),
+                                            lat: _lat, 
+                                            lng: _lng
+                                          );
+                                    
                                           // Remettre à vide les champs
                                           _dateController.text = '';
                                           _todoPriority = 2;
+                                          _lat = '';
+                                          _lng = '';
                                           // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
                                           fetchTodos();
                                           Navigator.pop(context);
@@ -461,14 +492,6 @@ class _TodosPageState extends State<TodosPage> {
     );
   }
 
-
-
-
-
-
-
-
-
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
     return AppBar(
@@ -487,6 +510,10 @@ class _TodosPageState extends State<TodosPage> {
   }
 
 
+  TileLayer get openStreetMapTilelayer => TileLayer(
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+  );
 
 
 
@@ -550,16 +577,34 @@ class _TodosPageState extends State<TodosPage> {
                 final DateTime? dateTime = await showDatePicker(
                   context: context,
                   firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                );
-                // La date choisie par l'utilisateur
-                if (dateTime != null) {
+                  lastDate: DateTime(2100));
+              if (dateTime != null) {
                   setState(() {
                     _dateController.text = dateTime.toString().split(" ")[0];
                   });
                 }
-              },
-            ),
+            },
+          ),
+            
+          // Adresse
+          todo.lat!.isNotEmpty ? Container(
+            padding: const EdgeInsets.all(10),
+            height: 240,
+            child: FlutterMap(
+                  options: MapOptions(
+                      initialCenter: LatLng(todo.getDoubleLat(),todo.getDoubleLng()),
+                      initialZoom: 11),
+                  children: [
+                    openStreetMapTilelayer
+                  ],
+                ),
+          ) : Container(
+                  padding: const EdgeInsets.all(10),
+                  height: 240,
+                  child: Text("pas d'adresse renseignée")
+          ),
+            
+            
 
             // Champ pour modifier le niveau de priorité de la tâche
             Padding(

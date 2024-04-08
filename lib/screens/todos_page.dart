@@ -4,9 +4,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todolist/widgets/updateTask.dart';
 
 import '../database/todo_db.dart';
 import '../model/todo.dart';
+import '../widgets/createTask.dart';
 
 class TodosPage extends StatefulWidget {
   const TodosPage({super.key});
@@ -150,6 +152,7 @@ class _TodosPageState extends State<TodosPage> {
                   // Sinon récupérer les tâchs pour les afficher sous forme de liste
                   else {
                     final todos = snapshot.data!;
+                    // Affichage des tâches
                     return ListView.separated(
                       separatorBuilder: (context, index) => const SizedBox(height: 12),
                       itemCount: todos.length,
@@ -157,129 +160,114 @@ class _TodosPageState extends State<TodosPage> {
                         // Identifier chaque tâche avec son index
                         final todo = todos[index];
 
-                        // Affichage de chaque tâche
-                        return Container(
-                          margin: const EdgeInsets.all(5),
+                        // Possibilité de supprimer une tâche par glissement
+                        return Dismissible(
+                            key: ValueKey<int>(todo.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              color: Colors.redAccent,
+                              child: const Icon(Icons.delete_forever, color: Colors.white),
+                            ),
+                            // Supprimer une tâche et rafraîchir la liste
+                            onDismissed: (DismissDirection direction) {
+                              setState(() {
+                                todoDB.delete(todo.id);
+                                fetchTodos();
+                              });
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.all(5),
 
-                          // Couleur de fond des tâches
-                          child: Card(
-                            color: todo.priority == 1
-                                ? todo.isDone == 0
-                            // Tâche prioritaire en cours => orange
-                                ? Colors.orange
-                            // Tâche prioritaire terminée => grey
-                                : Colors.grey
-                                : todo.isDone == 0
-                            // Tâche en cours => lime
-                                ? Colors.lime
-                            // Tâche terminée => grey
-                                : Colors.grey,
-                            // Si la tâche est terminée alors elle est grisée
+                              // Couleur de fond des tâches
+                              child: Card(
+                                color: todo.priority == 1
+                                    ? todo.isDone == 0
+                                // Tâche prioritaire en cours => orange
+                                    ? Colors.orange
+                                // Tâche prioritaire terminée => grey
+                                    : Colors.grey
+                                    : todo.isDone == 0
+                                // Tâche en cours => lime
+                                    ? Colors.lime
+                                // Tâche terminée => grey
+                                    : Colors.grey,
+                                // Si la tâche est terminée alors elle est grisée
 
-                            child: ListTile(
-                              // Au click sur la tâche on change son état (terminée = 1 / en cours = 0)
-                              onTap: () {
-                                setState(() {
-                                  if (todo.isDone == 0) {
-                                    todo.isDone = 1;
-                                  } else {
-                                    todo.isDone = 0;
-                                  }
-                                  // Appel à la méthode update de la BDD pour mettre à jour la tâche
-                                  todoDB.update(id: todo.id, isDone: todo.isDone);
-                                  // Rafraichîr l'affichage pour mettre les tâches terminées en bas
-                                  fetchTodos();
-                                });
-                              },
+                                child: ListTile(
+                                  // Au click sur la tâche peut la modifier
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: todo)));
+                                  },
 
-                              // Icon indiquant si la tâche est terminée ou non
-                              leading: Icon(
-                                // Si la tâche est terminée (isDone à 1) alors afficher une check_box pleine
-                                todo.isDone == 0 ? Icons.check_box_outline_blank : Icons.check_box,
-                                color: Colors.blueAccent,
-                              ),
+                                  // Icon indiquant si la tâche est terminée ou non
+                                  leading: IconButton(
+                                    // Si la tâche est terminée (isDone à 1) alors afficher une check_box pleine
+                                    icon: todo.isDone == 0
+                                        ? const Icon(Icons.check_box_outline_blank)
+                                        : const Icon(Icons.check_box),
+                                    color: Colors.blueAccent,
+                                    // Au click sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
+                                    onPressed: () {
+                                      setState(() {
+                                        if (todo.isDone == 0) {
+                                          todo.isDone = 1;
+                                        } else {
+                                          todo.isDone = 0;
+                                        }
+                                        // Appel à la méthode update de la BDD pour mettre à jour la tâche
+                                        todoDB.update(id: todo.id, isDone: todo.isDone);
+                                        // Rafraichîr l'affichage pour mettre les tâches terminées en bas
+                                        fetchTodos();
+                                      });
+                                    },
+                                  ),
 
-                              // Affiche le titre de la tâche
-                              title: Text(
-                                todo.title,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  overflow: TextOverflow.ellipsis,
-                                  // Si la tâche est terminée (isDone à 1) alors barrer le titre
-                                  decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
-                                ),
-                              ),
-
-                              // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
-                              subtitle: checkDate(todo) == true
-                                  ? Text(
-                                todo.date!,
-                                style: TextStyle(
-                                  // Si la tâche est terminée (isDone à 1) alors barrer le titre
-                                  decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
-                                ),
-                              )
-                                  : null,
-
-                              // Affichage de la date : bouton modifier et bouton supprimer
-                              trailing: Container(
-                                height: 45,
-                                width: 120,
-                                child: Row(
-                                  children: [
-
-                                    // 1er enfant : modifier la tâche
-                                    Container(
-                                      margin: const EdgeInsets.only(right: 5),
-                                      decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius: BorderRadius.circular(5)),
-                                      child: IconButton(
-                                        color: Colors.white,
-                                        iconSize: 16,
-                                        icon: const Icon(Icons.edit),
-                                        // Appel à la fonction updateTodo
-                                        onPressed: () {
-                                          showModalBottomSheet(
-                                              context: context,
-                                              // Pour quitter la modification d'une tâche il faut cliquer sur le bouton annuler
-                                              isDismissible: false,
-                                              builder: (BuildContext context) {
-                                                return updateTodo(todo);
-                                                return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
-                                                  return updateTodo(todo);
-                                                });
-                                              });
-                                        },
-                                      ),
+                                  // Affiche le titre de la tâche
+                                  title: Text(
+                                    todo.title,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      overflow: TextOverflow.ellipsis,
+                                      // Si la tâche est terminée (isDone à 1) alors barrer le titre
+                                      decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
                                     ),
+                                  ),
 
-                                    // 2e enfant : supprimer la tâche
-                                    Container(
-                                      margin: const EdgeInsets.only(left: 5),
-                                      decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius: BorderRadius.circular(5)),
-                                      child: IconButton(
-                                        color: Colors.white,
-                                        iconSize: 16,
-                                        icon: const Icon(Icons.delete),
-                                        // Appel à la fonction deleteTodo
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return deleteTodo(todo);
-                                            },
-                                          );
-                                        },
-                                      ),
+                                  // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
+                                  subtitle: checkDate(todo) == true
+                                      ? Text(
+                                    todo.date!,
+                                    style: TextStyle(
+                                      // Si la tâche est terminée (isDone à 1) alors barrer le titre
+                                      decoration: todo.isDone == 1 ? TextDecoration.lineThrough : null,
                                     ),
-                                  ],
+                                  )
+                                      : null,
+
+                                  // Bouton pour supprimer avec confirmation
+                                  trailing: Container(
+                                    margin: const EdgeInsets.only(left: 5),
+                                    decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(5)),
+                                    child: IconButton(
+                                      color: Colors.white,
+                                      iconSize: 16,
+                                      icon: const Icon(Icons.delete),
+                                      // Appel à la fonction deleteTodo
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return deleteTodo(todo);
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         );
                       },
                     );
@@ -293,208 +281,15 @@ class _TodosPageState extends State<TodosPage> {
 
 
 
-
-
-
-
       // Ajouter une nouvelle tâche
       floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.green,
           child: const Icon(Icons.add, color: Colors.black),
+          // Au click afficher le BottomSheet pour créer une tâche
           onPressed: () {
-            // Au click afficher le BottomSheet pour créer une tâche
-            showModalBottomSheet(
-              constraints: const BoxConstraints(maxWidth: double.maxFinite),
-              context: context,
-              // Pour quitter l'ajout d'une tâche il faut cliquer sur le bouton annuler
-              isDismissible: false,
-              builder: (BuildContext context) {
-                return StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
-                  return SingleChildScrollView(
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          // Champ pour entrer le nom de la tâche
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: TextFormField(
-                              decoration: const InputDecoration(
-                                labelText: 'Nom',
-                              ),
-                              validator: (titleValue) {
-                                if (titleValue == null || titleValue.isEmpty) {
-                                  return 'Titre requis';
-                                }
-                                return null;
-                              },
-                              // Sauvegarder le titre de la tâche
-                              onSaved: (titleValue) {
-                                _todoName = titleValue!;
-                              },
-                            ),
-                          ),
-
-                          // Champ pour entrer la description de la tâche
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: TextFormField(
-                              minLines: 3,
-                              maxLines: 5,
-                              decoration: const InputDecoration(labelText: 'Description de la tâche'),
-                              // Sauvegarder la description de la tâche
-                              onSaved: (titleValue) {
-                                _todoDesc = titleValue!;
-                              },
-                            ),
-                          ),
-
-                          // Champ pour entrer la date
-                          TextField(
-                            controller: _dateController,
-                            decoration: const InputDecoration(
-                              labelText: 'Date d\'échéance',
-                              filled: true,
-                            ),
-                            // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
-                            readOnly: true,
-                            onTap: () async {
-                              final DateTime? dateTime = await showDatePicker(
-                                context: context,
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime(2100),
-                              );
-                              // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
-                              if (dateTime != null) {
-                                setState(() {
-                                  _dateController.text = dateTime.toString().split(" ")[0];
-                                });
-                              }
-                            },
-                            // Sauvegarder la date de la tâche
-                            onChanged: (dateValue) {
-                              _dateController.text = dateValue;
-                            },
-                          ),
-
-
-                          // Champ pour l'adresse
-                          Padding(
-                            padding: EdgeInsets.only(left: 10),
-                            child: TextFormField(
-                              decoration: const InputDecoration(labelText: 'Adresse'),
-                              onChanged: (adress){
-                                _adress = adress;
-                              },
-                            ),
-                          ),
-
-
-                          // Définir le niveau de priorité de la tâche
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Row(
-                              children: [
-                                const Text(
-                                    "Définir en tant que tâche prioritaire : ",
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
-
-                                IconButton(
-                                  // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
-                                  icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
-                                      color: Colors.blueAccent
-                                  ),
-                                  // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
-                                  onPressed: () {
-                                    setState(() {
-                                      if (_todoPriority == 2) {
-                                        _todoPriority = 1;
-                                      } else {
-                                        _todoPriority = 2;
-                                      }
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-
-
-                          // Boutons pour ajouter une tâche ou annuler l'ajout
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-
-                              // Bouton pour ajouter la tâche
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                    onPressed: () async {
-
-                                      // Pour l'adresse
-                                      if(_adress.isNotEmpty) {
-                                        List<Location> locations = await locationFromAddress(_adress);
-                                        _lat = locations.last.latitude.toString();
-                                        _lng = locations.last.longitude.toString();
-                                        print(_lat);
-                                      }
-
-                                      // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
-                                      if (_formKey.currentState!.validate()) {
-                                        _formKey.currentState!.save();
-                                        // Si oui, alors ajout de la tâche dans la BDD
-                                        setState(() {
-                                          // Appel à la méthode create de la BDD pour enregistrer la tâche
-                                          todoDB.create(
-                                              title: _todoName,
-                                              description: _todoDesc,
-                                              priority: _todoPriority,
-                                              date: _dateController.text.toString(),
-                                              lat: _lat,
-                                              lng: _lng
-                                          );
-
-                                          // Remettre à vide les champs
-                                          _dateController.text = '';
-                                          _todoPriority = 2;
-                                          _lat = '';
-                                          _lng = '';
-                                          // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
-                                          fetchTodos();
-                                          Navigator.pop(context);
-                                        });
-                                      }
-                                    },
-                                    child: const Text('ajouter', style: TextStyle(color: Colors.white),)),
-                              ),
-
-                              // Bouton pour fermer le showModalBottomSheet
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                  onPressed: () {
-                                    // Remettre à vide les champs
-                                    _dateController.text = '';
-                                    _todoPriority = 2;
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('annuler', style: TextStyle(color: Colors.white),),
-                                ),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                );
-              },
-            );
-          }
-      ),
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTask()));
+          },
+      )
     );
   }
 
@@ -503,6 +298,8 @@ class _TodosPageState extends State<TodosPage> {
     return AppBar(
       backgroundColor: Colors.green,
       title: const Text('Mes tâches', style: TextStyle(color: Colors.black)),
+      // Désactiver la possibilité de retour lors de l'affichage des tâches
+      automaticallyImplyLeading: false,
     );
   }
   

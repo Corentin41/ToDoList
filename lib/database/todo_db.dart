@@ -52,7 +52,7 @@ class TodoDB {
   }
 
   // Fonction pour modifier une donnée dans la BDD à partir d'un id
-  Future<int> update({required int id, String? title, String? description, int? priority, int? isDone, String? date}) async {
+  Future<int> update({required int id, String? title, String? description, int? priority, int? isDone, String? date, String? lat, String? lng}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,
@@ -63,6 +63,8 @@ class TodoDB {
           if (priority != null) 'priority' : priority,
           if (isDone != null) 'isDone' : isDone,
           if (date != null) 'date' : date,
+          if (lat != null) 'lat' : lat,
+          if (lng != null) 'lng' : lng,
           'updated_at' : DateTime.now().millisecondsSinceEpoch,
         },
         where: 'id = ?',

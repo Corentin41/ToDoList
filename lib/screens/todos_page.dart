@@ -384,7 +384,7 @@ class _TodosPageState extends State<TodosPage> {
               }
             },
           ),
-          Container(
+          todo.lat!.isNotEmpty ? Container(
             padding: const EdgeInsets.all(10),
             height: 240,
             child: FlutterMap(
@@ -395,6 +395,10 @@ class _TodosPageState extends State<TodosPage> {
                     openStreetMapTilelayer
                   ],
                 ),
+          ) : Container(
+                  padding: const EdgeInsets.all(10),
+                  height: 240,
+                  child: Text("pas d'adresse renseignée")
           ),
 
           // Les boutons pour valider ou annuler la modification

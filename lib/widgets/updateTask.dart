@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:todolist/model/todo.dart';
-import 'package:todolist/screens/todos_page.dart';
+import 'package:todolist/model/task.dart';
+import 'package:todolist/screens/home.dart';
 
-import '../database/todo_db.dart';
+import '../database/task_db.dart';
 
 class UpdateTask extends StatefulWidget {
-  final Todo task;
+  final Task task;
 
   const UpdateTask({super.key, required this.task});
 
@@ -20,24 +20,34 @@ class _UpdateTaskState extends State<UpdateTask> {
 
 
   // Liste des tâches et la BDD
-  Future<List<Todo>>? futureTasks;
-  final taskDB = TodoDB();
+  Future<List<Task>>? futureTasks;
+  final taskDB = TaskDB();
 
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // Initialiser les valeur contenues dans une tâche
+  String _taskName = '';
+  String _taskDesc = '';
+  int _taskPriority = 2;
+  String _lat = '';
+  String _lng = '';
 
   // Contiennent les valeurs dans le form
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _descController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
 
   @override
-  void initState() {
+  initState() {
     super.initState();
     loadTasks();
+    // Initialiser le niveau de priorité de la tâche à modifier
+    _taskPriority = widget.task.priority;
+    _lat = widget.task.lat!;
+    _lng = widget.task.lng!;
+    // Récupérer l'adresse
+    getAdressFromLocation(_lat, _lng);
   }
 
 
@@ -48,8 +58,8 @@ class _UpdateTaskState extends State<UpdateTask> {
 
 
   // Fonction pour vérifier si l'utilisateur a entré une date ou non
-  bool checkDate(Todo todo) {
-    if (todo.date != null && todo.date!.isNotEmpty) {
+  bool checkDate(Task task) {
+    if (task.date != null && task.date!.isNotEmpty) {
       return true;
     }
     return false;
@@ -65,14 +75,6 @@ class _UpdateTaskState extends State<UpdateTask> {
 
   @override
   Widget build(BuildContext context) {
-
-    // Initialiser les valeur à partir de celles stockées en BDD
-    _titleController.text = widget.task.title;
-    _descController.text = widget.task.description;
-    int _todoPriority = widget.task.priority;
-    String _lat = '';
-    String _lng = '';
-
 
     return Scaffold(
       appBar: AppBar(
@@ -96,7 +98,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
-                        controller: _titleController,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: "Nom"
@@ -109,9 +110,10 @@ class _UpdateTaskState extends State<UpdateTask> {
                             return null;
                           }
                         },
-                        // Récupérer le titre modifié
-                        onSaved: (titleValue) {
-                          _titleController.text = titleValue!;
+                        // Afficher le titre précédemment entré par l'utilisateur
+                        initialValue: widget.task.name,
+                        onSaved: (nameValue) {
+                          _taskName = nameValue!;
                         },
                       ),
                     ),
@@ -125,11 +127,16 @@ class _UpdateTaskState extends State<UpdateTask> {
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         minLines: 5,
-                        controller: _descController,
+                        //controller: _descController,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: "Description"
                         ),
+                        // Afficher la description précédemment entrée par l'utilisateur
+                        initialValue: widget.task.description,
+                        onSaved: (descValue) {
+                          _taskDesc = descValue!;
+                        },
                       ),
                     ),
 
@@ -159,10 +166,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                             });
                           }
                         },
-                        // Sauvegarder la date de la tâche
-                        onChanged: (dateValue) {
-                          _dateController.text = dateValue;
-                        },
                       ),
                     ),
 
@@ -178,9 +181,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                             border: OutlineInputBorder(),
                             hintText: "Adresse"
                         ),
-                        onChanged: (address){
-                          //_address = address;
-                        },
                       ),
                     ),
 
@@ -221,16 +221,16 @@ class _UpdateTaskState extends State<UpdateTask> {
 
                           IconButton(
                             // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
-                            icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
+                            icon: Icon(_taskPriority == 1 ? Icons.star : Icons.star_border,
                                 color: Colors.blueAccent
                             ),
                             // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
                             onPressed: () {
                               setState(() {
-                                if (_todoPriority == 2) {
-                                  _todoPriority = 1;
+                                if (_taskPriority == 2) {
+                                  _taskPriority = 1;
                                 } else {
-                                  _todoPriority = 2;
+                                  _taskPriority = 2;
                                 }
                               });
                             },
@@ -253,7 +253,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                               onPressed: () async {
 
-                                // Pour l'adresse
+                                // Si une adresse a été entrée alors on récupère les coordonnées pour les stocker en BDD
                                 if(_addressController.text.toString().isNotEmpty) {
                                   List<Location> locations = await locationFromAddress(_addressController.text);
                                   _lat = locations.last.latitude.toString();
@@ -263,32 +263,27 @@ class _UpdateTaskState extends State<UpdateTask> {
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
-                                  // Si oui, alors ajout de la tâche dans la BDD
+
+                                  // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
+                                  if (_dateController.text.isEmpty) {
+                                    _dateController.text = widget.task.date.toString();
+                                  }
+
                                   // Appel à la méthode create de la BDD pour enregistrer la tâche
                                   taskDB.update(
                                       id: widget.task.id,
-                                      title: _titleController.text.toString(),
-                                      description: _descController.text.toString(),
-                                      priority: _todoPriority,
+                                      name: _taskName,
+                                      description: _taskDesc,
+                                      priority: _taskPriority,
                                       date: _dateController.text.toString(),
                                       lat: _lat,
                                       lng: _lng
                                   );
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const TodosPage()));
-
-                                  // Remettre à vide les champs
-                                  //_titleController.clear();
-                                  _descController.clear();
-                                  _dateController.clear();
-                                  _todoPriority = 2;
-                                  _lat = '';
-                                  _lng = '';
-                                  // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
-                                  //loadTasks();
-                                  //Navigator.pop(context);
+                                  // Retourner sur la page d'affichage des tâches
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
-                              child: const Text('confirmer', style: TextStyle(color: Colors.white),)),
+                              child: const Text('modifier', style: TextStyle(color: Colors.white),)),
                         ),
 
                         // Bouton pour annuler la modification de tâche
@@ -297,9 +292,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                             onPressed: () {
-                              // Remettre à vide les champs et quitter la page
-                              _dateController.clear();
-                              _todoPriority = 2;
+                              // Retourner sur la page d'affichage des tâches
                               Navigator.pop(context);
                             },
                             child: const Text('annuler', style: TextStyle(color: Colors.white),),
@@ -315,203 +308,17 @@ class _UpdateTaskState extends State<UpdateTask> {
         ),
       ),
     );
-
-
-    /*return showModalBottomSheet(
-        constraints: const BoxConstraints(maxWidth: double.maxFinite),
-        context: context,
-        // Pour quitter l'ajout d'une tâche il faut cliquer sur le bouton annuler
-        isDismissible: false,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return SingleChildScrollView(
-                  child: Text("coucou"),
-                )
-              }
-          );
-        }
-    );*/
   }
+
+
+  // Fonction pour récupérer l'adresse en fonction des coordonnées stockées en BDD
+  void getAdressFromLocation(String lat, String lng) async {
+
+    double latitude = double.parse(lat);
+    double longitude = double.parse(lng);
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+    _addressController.text = placemarks.last.locality!;
+  }
+
 }
-
-/*return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Champ pour entrer le nom de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Nom',
-                ),
-                validator: (titleValue) {
-                  if (titleValue == null || titleValue.isEmpty) {
-                    return 'Titre requis';
-                  }
-                  return null;
-                },
-                // Sauvegarder le titre de la tâche
-                onSaved: (titleValue) {
-                  _todoName = titleValue!;
-                },
-              ),
-            ),
-
-            // Champ pour entrer la description de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: TextFormField(
-                minLines: 3,
-                maxLines: 5,
-                decoration: const InputDecoration(labelText: 'Description de la tâche'),
-                // Sauvegarder la description de la tâche
-                onSaved: (titleValue) {
-                  _todoDesc = titleValue!;
-                },
-              ),
-            ),
-
-            // Champ pour entrer la date
-            TextField(
-              controller: _dateController,
-              decoration: const InputDecoration(
-                labelText: 'Date d\'échéance',
-                filled: true,
-              ),
-              // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
-              readOnly: true,
-              onTap: () async {
-                final DateTime? dateTime = await showDatePicker(
-                  context: context,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime(2100),
-                );
-                // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
-                if (dateTime != null) {
-                  setState(() {
-                    _dateController.text = dateTime.toString().split(" ")[0];
-                  });
-                }
-              },
-              // Sauvegarder la date de la tâche
-              onChanged: (dateValue) {
-                _dateController.text = dateValue;
-              },
-            ),
-
-
-            // Champ pour l'adresse
-            Padding(
-              padding: EdgeInsets.only(left: 10),
-              child: TextFormField(
-                decoration: const InputDecoration(labelText: 'Adresse'),
-                onChanged: (adress){
-                  _adress = adress;
-                },
-              ),
-            ),
-
-
-            // Définir le niveau de priorité de la tâche
-            Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Row(
-                children: [
-                  const Text(
-                      "Définir en tant que tâche prioritaire : ",
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-
-                  IconButton(
-                    // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
-                    icon: Icon(_todoPriority == 1 ? Icons.star : Icons.star_border,
-                        color: Colors.blueAccent
-                    ),
-                    // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
-                    onPressed: () {
-                      setState(() {
-                        if (_todoPriority == 2) {
-                          _todoPriority = 1;
-                        } else {
-                          _todoPriority = 2;
-                        }
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-
-            // Boutons pour ajouter une tâche ou annuler l'ajout
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                // Bouton pour ajouter la tâche
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      onPressed: () async {
-
-                        // Pour l'adresse
-                        if(_adress.isNotEmpty) {
-                          List<Location> locations = await locationFromAddress(_adress);
-                          _lat = locations.last.latitude.toString();
-                          _lng = locations.last.longitude.toString();
-                          print(_lat);
-                        }
-
-                        // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          // Si oui, alors ajout de la tâche dans la BDD
-                          setState(() {
-                            // Appel à la méthode create de la BDD pour enregistrer la tâche
-                            todoDB.create(
-                                title: _todoName,
-                                description: _todoDesc,
-                                priority: _todoPriority,
-                                date: _dateController.text.toString(),
-                                lat: _lat,
-                                lng: _lng
-                            );
-
-                            // Remettre à vide les champs
-                            _dateController.text = '';
-                            _todoPriority = 2;
-                            _lat = '';
-                            _lng = '';
-                            // Rafraîchir l'affichage des tâches et fermer le showModalBottomSheet
-                            fetchTodos();
-                            Navigator.pop(context);
-                          });
-                        }
-                      },
-                      child: const Text('ajouter', style: TextStyle(color: Colors.white),)),
-                ),
-
-                // Bouton pour fermer le showModalBottomSheet
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    onPressed: () {
-                      // Remettre à vide les champs
-                      _dateController.text = '';
-                      _todoPriority = 2;
-                      Navigator.pop(context);
-                    },
-                    child: const Text('annuler', style: TextStyle(color: Colors.white),),
-                  ),
-                )
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }*/

@@ -1,4 +1,4 @@
-import 'package:todolist/database/todo_db.dart';
+import 'package:todolist/database/task_db.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -20,7 +20,7 @@ class DatabaseService {
 
   // Fonction qui permet de récupérer le chemin de la BDD par défaut du device
   Future<String> get fullPath async {
-    const name = 'todo.db';
+    const name = 'task.db';
     final path = await getDatabasesPath();
     return join(path, name);
   }
@@ -39,6 +39,6 @@ class DatabaseService {
 
   // Permet de créer une table dans notre BDD
   Future<void> create(Database database, int version) async =>
-      await TodoDB().createTable(database);
+      await TaskDB().createTable(database);
 
 }

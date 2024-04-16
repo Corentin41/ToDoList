@@ -229,7 +229,8 @@ class _CreateTaskState extends State<CreateTask> {
                                       priority: _taskPriority,
                                       date: _dateController.text.toString(),
                                       lat: _lat,
-                                      lng: _lng
+                                      lng: _lng,
+                                      address: _addressController.text.toString()
                                   );
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }

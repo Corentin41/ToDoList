@@ -18,20 +18,21 @@ class TaskDB {
         ' date TEXT,'
         ' lat TEXT,'
         ' lng TEXT,'
+        ' address TEXT,'
         ' created_at INTEGER NOT NULL DEFAULT (cast(strftime(\'%s\',\'now\') as int)),'
         ' updated_at INTEGER'
         ')');
   }
 
   // Fonction qui permet d'insérer des données dans notre BDD
-  Future<int> create({required String name, String? description, int? priority, String? date, String? lat, String? lng}) async {
+  Future<int> create({required String name, String? description, int? priority, String? date, String? lat, String? lng , String? address}) async {
     // Vérifier que la BDD existe
     final database = await DatabaseService().database;
     // Si oui alors on peut insérer des données
     return await database.rawInsert(
-      '''INSERT INTO $tableName (name, description, priority, isDone, date, lat, lng, created_at) VALUES (?,?,?,?,?,?,?,?)''',
+      '''INSERT INTO $tableName (name, description, priority, isDone, date, lat, lng, address, created_at) VALUES (?,?,?,?,?,?,?,?,?)''',
       // Par défaut isDone est à false (valeur 0) car la tâche créée n'est pas terminée
-      [name, description, priority, 0, date, lat, lng, DateTime.now().millisecondsSinceEpoch],
+      [name, description, priority, 0, date, lat, lng, address, DateTime.now().millisecondsSinceEpoch],
     );
   }
 
@@ -52,7 +53,7 @@ class TaskDB {
   }
 
   // Fonction pour modifier une donnée dans la BDD à partir d'un id
-  Future<int> update({required int id, String? name, String? description, int? priority, int? isDone, String? date, String? lat, String? lng}) async {
+  Future<int> update({required int id, String? name, String? description, int? priority, int? isDone, String? date, String? lat, String? lng, String? address}) async {
     final database = await DatabaseService().database;
     return await database.update(
         tableName,
@@ -65,6 +66,7 @@ class TaskDB {
           if (date != null) 'date' : date,
           if (lat != null) 'lat' : lat,
           if (lng != null) 'lng' : lng,
+          if (address != null) 'address' : address,
           'updated_at' : DateTime.now().millisecondsSinceEpoch,
         },
         where: 'id = ?',

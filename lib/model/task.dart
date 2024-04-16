@@ -11,6 +11,7 @@ class Task {
   final String? updatedAt;
   final String? lat;
   final String? lng;
+  final String? address;
 
   Task({
     required this.id,
@@ -22,7 +23,8 @@ class Task {
     required this.createdAt,
     this.updatedAt,
     this.lat,
-    this.lng
+    this.lng,
+    this.address
   });
 
   // Fonction qui permet de récupérer les données depuis la BDD
@@ -35,6 +37,7 @@ class Task {
     date: task['date'] ?? '',
     lat: task['lat'] ?? '',
     lng: task['lng'] ?? '',
+    address: task['address'] ?? '',
     createdAt: DateTime.fromMillisecondsSinceEpoch(task['created_at']).toIso8601String(),
     updatedAt: task['updated_at'] == null
     // Vérifier s'il y a eu une modification

@@ -25,8 +25,8 @@ class _CreateTaskState extends State<CreateTask> {
 
 
   // Contiennent les valeurs dans le form
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   // Initialiser les valeur contenues dans une tâche
   String _taskName = '';
@@ -34,6 +34,9 @@ class _CreateTaskState extends State<CreateTask> {
   int _taskPriority = 2; // Par défaut, les tâches sont secondaires (priorité niv 2)
   String _lat = '';
   String _lng = '';
+
+  // Initialiser le bool de test d'adresse
+  bool _testAddress = false;
 
 
 
@@ -67,8 +70,6 @@ class _CreateTaskState extends State<CreateTask> {
                 key: _formKey,
                 child: Column(
                   children: [
-
-
 
                     // Champ pour saisir le titre
                     Padding(
@@ -154,14 +155,19 @@ class _CreateTaskState extends State<CreateTask> {
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
-                        //controller: _addressController,
+                        controller: _addressController,
                         decoration: const InputDecoration(
                             border: OutlineInputBorder(),
                             hintText: "Adresse"
                         ),
-                        // Sauvegarder la date de la tâche
-                        onChanged: (addressValue) {
-                          _addressController.text = addressValue!;
+                        validator: (value) {
+                          if(_addressController.text.isNotEmpty){
+                            testAddress();
+                            if(!_testAddress){
+                              return 'Adresse incorrecte';
+                            }
+                          }
+                          return null;
                         },
                       ),
                     ),
@@ -259,5 +265,14 @@ class _CreateTaskState extends State<CreateTask> {
         ),
       ),
     );
+  }
+
+  void testAddress() async {
+    try{
+      List<Location> locations = await locationFromAddress(_addressController.text);
+      _testAddress = true;
+    }catch(e){
+      _testAddress = false;
+    }
   }
 }

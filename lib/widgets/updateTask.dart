@@ -45,6 +45,9 @@ class _UpdateTaskState extends State<UpdateTask> {
   // Initialiser le chemin de l'icone
   String _icon = '';
 
+  // Initialiser le bool de test d'adresse
+  bool _testAddress = false;
+
   // Contiennent les valeurs dans le form
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -186,8 +189,7 @@ class _UpdateTaskState extends State<UpdateTask> {
 
                     // Champ pour modifier l'adresse
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         controller: _addressController,
@@ -195,6 +197,15 @@ class _UpdateTaskState extends State<UpdateTask> {
                             border: OutlineInputBorder(),
                             hintText: "Adresse"
                         ),
+                        validator: (value) {
+                          if(_addressController.text.isNotEmpty){
+                            testAddress();
+                            if(!_testAddress){
+                              return 'Adresse incorrecte';
+                            }
+                          }
+                          return null;
+                        },
                       ),
                     ),
 
@@ -324,9 +335,14 @@ class _UpdateTaskState extends State<UpdateTask> {
 
                                   if (_addressController.text.toString() != widget.task.address){
                                     if(_addressController.text.toString().isNotEmpty){
-                                      List<Location> locations = await locationFromAddress(_addressController.text);
-                                      _lat = locations.last.latitude.toString();
-                                      _lng = locations.last.longitude.toString();
+                                      try{
+                                        List<Location> locations = await locationFromAddress(_addressController.text);
+                                        _lat = locations.last.latitude.toString();
+                                        _lng = locations.last.longitude.toString();
+                                      }catch(e){
+                                        _lat = '';
+                                        _lng = '';
+                                      }
                                     }else{
                                       _lat = '';
                                       _lng = '';
@@ -411,6 +427,15 @@ class _UpdateTaskState extends State<UpdateTask> {
       });
     } else {
       throw Exception('Echec lors de la récupération des données');
+    }
+  }
+
+  void testAddress() async {
+    try{
+      List<Location> locations = await locationFromAddress(_addressController.text);
+      _testAddress = true;
+    }catch(e){
+      _testAddress = false;
     }
   }
 

@@ -20,6 +20,7 @@ class _CreateTaskState extends State<CreateTask> {
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
+
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -35,21 +36,14 @@ class _CreateTaskState extends State<CreateTask> {
   String _lat = '';
   String _lng = '';
 
-  // Initialiser le bool de test d'adresse
-  bool _testAddress = false;
 
+  // Booléen permettant de vérifier si l'adresse saisie est correcte
+  bool _testAddress = false;
 
 
   @override
   void initState() {
     super.initState();
-    loadTasks();
-  }
-
-
-  loadTasks() async {
-    String sortPref = 'priority';
-    futureTasks = taskDB.fetchAll(sortPref);
   }
 
 
@@ -70,6 +64,8 @@ class _CreateTaskState extends State<CreateTask> {
                 key: _formKey,
                 child: Column(
                   children: [
+
+
 
                     // Champ pour saisir le titre
                     Padding(
@@ -160,15 +156,6 @@ class _CreateTaskState extends State<CreateTask> {
                             border: OutlineInputBorder(),
                             hintText: "Adresse"
                         ),
-                        validator: (value) {
-                          if(_addressController.text.isNotEmpty){
-                            testAddress();
-                            if(!_testAddress){
-                              return 'Adresse incorrecte';
-                            }
-                          }
-                          return null;
-                        },
                       ),
                     ),
 
@@ -217,27 +204,49 @@ class _CreateTaskState extends State<CreateTask> {
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                               onPressed: () async {
 
-                                // Si une adresse a été entrée alors on récupère les coordonnées pour les stocker en BDD
-                                if (_addressController.text.toString().isNotEmpty) {
-                                  List<Location> locations = await locationFromAddress(_addressController.text);
-                                  _lat = locations.last.latitude.toString();
-                                  _lng = locations.last.longitude.toString();
-                                }
-
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
-                                  // Si oui, alors ajout de la tâche dans la BDD
-                                  // Appel à la méthode create de la BDD pour enregistrer la tâche
+
+                                  // Vérifier que s'il y a une adresse alors elle existe
+                                  await testAddress();
+
+                                  // Si l'adresse saisie n'existe pas alors retourner une AlertDialog
+                                  if (_addressController.text.isNotEmpty && _testAddress == false) {
+                                    return showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Center(child: Text('Adresse incorrecte !')),
+                                          actionsAlignment: MainAxisAlignment.center,
+                                          actions: [
+                                            // Annuler et fermer la popup
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                              onPressed: () {
+                                                // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('Fermer',
+                                                style: TextStyle(color: Colors.white),),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+
+                                  // Ajout de la tâche dans la BDD
                                   taskDB.create(
                                       name: _taskName,
                                       description: _taskDesc,
                                       priority: _taskPriority,
-                                      date: _dateController.text.toString(),
+                                      date: _dateController.text,
                                       lat: _lat,
                                       lng: _lng,
-                                      address: _addressController.text.toString()
+                                      address: _addressController.text
                                   );
+                                  // Retourner sur la page d'affichage des tâches
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
@@ -267,12 +276,19 @@ class _CreateTaskState extends State<CreateTask> {
     );
   }
 
-  void testAddress() async {
-    try{
+
+
+  // Fonction qui permet de vérifier si l'adresse entrée existe
+  Future<bool> testAddress() async {
+    try {
       List<Location> locations = await locationFromAddress(_addressController.text);
+      _lat = locations.last.latitude.toString();
+      _lng = locations.last.longitude.toString();
       _testAddress = true;
-    }catch(e){
+    } catch(e) {
       _testAddress = false;
     }
+    return _testAddress;
   }
+
 }

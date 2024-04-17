@@ -27,8 +27,10 @@ class _UpdateTaskState extends State<UpdateTask> {
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
+
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
 
   // Initialiser les valeur contenues dans une tâche
   String _taskName = '';
@@ -37,16 +39,20 @@ class _UpdateTaskState extends State<UpdateTask> {
   String _lat = '';
   String _lng = '';
 
+
   // Initialiser les String pour les températures
   String _tempMin = '';
   String _tempActuelle = '';
   String _tempMax = '';
 
+
   // Initialiser le chemin de l'icone
   String _icon = '';
 
-  // Initialiser le bool de test d'adresse
-  bool _testAddress = false;
+
+  // Booléen permettant de vérifier si l'adresse saisie est correcte
+  bool _testAddress = true;
+
 
   // Contiennent les valeurs dans le form
   final TextEditingController _dateController = TextEditingController();
@@ -56,29 +62,16 @@ class _UpdateTaskState extends State<UpdateTask> {
   @override
   initState() {
     super.initState();
-    loadTasks();
     // Initialiser le niveau de priorité de la tâche à modifier
     _taskPriority = widget.task.priority;
+    // Récupérer l'adresse (s'il y a une adresse en BDD)
     _lat = widget.task.lat!;
     _lng = widget.task.lng!;
-    // Récupérer l'adresse
-    setWeatherDetails(_lat, _lng);
     _addressController.text = widget.task.address!;
-  }
-
-
-  loadTasks() async {
-    String sortPref = 'priority';
-    futureTasks = taskDB.fetchAll(sortPref);
-  }
-
-
-  // Fonction pour vérifier si l'utilisateur a entré une date ou non
-  bool checkDate(Task task) {
-    if (task.date != null && task.date!.isNotEmpty) {
-      return true;
+    // Récupérer les informations météo de cette adresse
+    if (_lat.isNotEmpty && _lng.isNotEmpty) {
+      setWeatherDetails(_lat, _lng);
     }
-    return false;
   }
 
 
@@ -107,10 +100,11 @@ class _UpdateTaskState extends State<UpdateTask> {
                 child: Column(
                   children: [
 
+
+
                     // Champ pour modifier le titre de la tâche
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         decoration: const InputDecoration(
@@ -133,10 +127,11 @@ class _UpdateTaskState extends State<UpdateTask> {
                       ),
                     ),
 
+
+
                     // Champ pour modifier la description
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
@@ -154,6 +149,8 @@ class _UpdateTaskState extends State<UpdateTask> {
                       ),
                     ),
 
+
+
                     // Champ pour modifier la date
                     Padding(
                       padding: const EdgeInsets.only(
@@ -162,12 +159,8 @@ class _UpdateTaskState extends State<UpdateTask> {
                         controller: _dateController,
                         // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
                         decoration: checkDate(widget.task) == true
-                            ? InputDecoration(
-                            border: OutlineInputBorder(), hintText: widget.task
-                            .date.toString())
-                            : const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Date d\'échéance'),
+                            ? InputDecoration(border: const OutlineInputBorder(), hintText: widget.task.date.toString())
+                            : const InputDecoration(border: OutlineInputBorder(), labelText: 'Date d\'échéance'),
                         // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
                         readOnly: true,
                         onTap: () async {
@@ -179,13 +172,14 @@ class _UpdateTaskState extends State<UpdateTask> {
                           // S'il y a une date sélectionnée alors on pourra l'enregistrer en BDD
                           if (dateTime != null) {
                             setState(() {
-                              _dateController.text =
-                              dateTime.toString().split(" ")[0];
+                              _dateController.text = dateTime.toString().split(" ")[0];
                             });
                           }
                         },
                       ),
                     ),
+
+
 
                     // Champ pour modifier l'adresse
                     Padding(
@@ -197,24 +191,16 @@ class _UpdateTaskState extends State<UpdateTask> {
                             border: OutlineInputBorder(),
                             hintText: "Adresse"
                         ),
-                        validator: (value) {
-                          if(_addressController.text.isNotEmpty){
-                            testAddress();
-                            if(!_testAddress){
-                              return 'Adresse incorrecte';
-                            }
-                          }
-                          return null;
-                        },
                       ),
                     ),
 
+
+
                     // Affichage de l'adresse sur une map
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 20),
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: widget.task.address!.isNotEmpty
-                          ? // Afficher la map s'il y a des coords stockées en BDD
+                          ? // Afficher la map s'il y a une adresse stockée en BDD
                       Container(
                         padding: const EdgeInsets.all(10),
                         height: 240,
@@ -237,8 +223,10 @@ class _UpdateTaskState extends State<UpdateTask> {
                                         Icons.location_pin,
                                         color: Colors.red,
                                         size: 50.0,
-                                      ),)
-                                ]),
+                                      ),
+                                  )
+                                ]
+                            ),
                           ],
                         ),
                       ) : // Sinon afficher un message
@@ -250,35 +238,44 @@ class _UpdateTaskState extends State<UpdateTask> {
                       ),
                     ),
 
-                    //Affichage des données météo
+
+
+                    // Affichage des données météo
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20, right: 20, bottom: 20),
-                      child: Row(
+                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                      child: widget.task.address!.isNotEmpty
+                        ? // Afficher la météo s'il y a une adresse stockée en BDD
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(children: [
-                            Text("Actuellement"),
-                            Text(_tempActuelle),
-                          ],
+                          Column(
+                            // Temp Actuelle
+                            children: [
+                              const Text("Actuellement"),
+                              Text(_tempActuelle),
+                            ],
                           ),
-
+                          // Icon météo
                           Container(
                               child: _icon.isNotEmpty
                               // Si on trouve un icone lié à la météo alors l'afficher
-                                  ? Image.network(
-                                  'http://openweathermap.org/img/w/$_icon.png',
-                                  fit: BoxFit.cover)
+                                  ? Image.network('http://openweathermap.org/img/w/$_icon.png', fit: BoxFit.cover)
                               // Par défaut on n'affiche rien
                                   : null
                           ),
-                          Column(children: [
-                            Text("min / max"),
-                            Text("$_tempMin / $_tempMax"),
-                          ],)
+                          // Temp Min Max
+                          Column(
+                            children: [
+                              const Text("min / max"),
+                              Text("$_tempMin / $_tempMax"),
+                            ],
+                          )
                         ],
-                      ),
+                      ) : // Sinon ne rien afficher
+                      null
                     ),
+
+
 
                     // Modifier le niveau de priorité de la tâche
                     Padding(
@@ -288,12 +285,11 @@ class _UpdateTaskState extends State<UpdateTask> {
                         children: [
                           const Text(
                               "Changer le niveau de priorité : ",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-
+                              style: TextStyle(fontWeight: FontWeight.bold)
+                          ),
                           IconButton(
                             // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
-                            icon: Icon(_taskPriority == 1 ? Icons.star : Icons
-                                .star_border,
+                            icon: Icon(_taskPriority == 1 ? Icons.star : Icons.star_border,
                                 color: Colors.blueAccent
                             ),
                             // Au click, changer le niveau de priorité (1 pour prioritaire et 2 pour secondaire)
@@ -310,6 +306,8 @@ class _UpdateTaskState extends State<UpdateTask> {
                         ],
                       ),
                     ),
+
+
 
                     // Boutons pour confirmer ou annuler la modification
                     Row(
@@ -329,27 +327,41 @@ class _UpdateTaskState extends State<UpdateTask> {
 
                                   // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
                                   if (_dateController.text.isEmpty) {
-                                    _dateController.text =
-                                        widget.task.date.toString();
+                                    _dateController.text = widget.task.date.toString();
                                   }
 
-                                  if (_addressController.text.toString() != widget.task.address){
-                                    if(_addressController.text.toString().isNotEmpty){
-                                      try{
-                                        List<Location> locations = await locationFromAddress(_addressController.text);
-                                        _lat = locations.last.latitude.toString();
-                                        _lng = locations.last.longitude.toString();
-                                      }catch(e){
-                                        _lat = '';
-                                        _lng = '';
+                                  // Si l'adresse a été modifiée et n'est pas vide alors vérifier qu'elle existe
+                                  if (_addressController.text != widget.task.address) {
+                                    if (_addressController.text.isNotEmpty) {
+                                      // Récupérer les coordonnées à partir de l'adresse entrée
+                                      await testAddress();
+                                      if (_testAddress == false) {
+                                        return showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: const Center(child: Text('Adresse incorrecte !')),
+                                              actionsAlignment: MainAxisAlignment.center,
+                                              actions: [
+                                                // Annuler et fermer la popup
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                  onPressed: () {
+                                                    // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text('Fermer',
+                                                    style: TextStyle(color: Colors.white),),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
                                       }
-                                    }else{
-                                      _lat = '';
-                                      _lng = '';
                                     }
                                   }
 
-                                  // Appel à la méthode create de la BDD pour enregistrer la tâche
+                                  // Modification de la tâche dans la BDD
                                   taskDB.update(
                                     id: widget.task.id,
                                     name: _taskName,
@@ -361,13 +373,14 @@ class _UpdateTaskState extends State<UpdateTask> {
                                     address: _addressController.text.toString(),
                                   );
                                   // Retourner sur la page d'affichage des tâches
-                                  Navigator.push(context, MaterialPageRoute(
-                                      builder: (context) => const HomePage()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
                               child: const Text('modifier',
                                 style: TextStyle(color: Colors.white),)),
                         ),
+
+
 
                         // Bouton pour annuler la modification de tâche
                         Container(
@@ -396,16 +409,28 @@ class _UpdateTaskState extends State<UpdateTask> {
   }
 
 
+
+  // Fonction pour vérifier si l'utilisateur a entré une date ou non
+  bool checkDate(Task task) {
+    if (task.date != null && task.date!.isNotEmpty) {
+      return true;
+    }
+    return false;
+  }
+
+
+
   // Fonction pour récupérer l'adresse en fonction des coordonnées stockées en BDD
   void setWeatherDetails(String lat, String lng) async {
     double latitude = double.parse(lat);
     double longitude = double.parse(lng);
 
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-        latitude, longitude);
-    String city = placemarks.last.locality!;
+    List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+    String city = placemarks.first.locality!;
     _getWeather(city);
   }
+
+
 
   //Fonction pour récupérer les données météo de la ville passée en paramètre
   Future<void> _getWeather(String city) async {
@@ -430,13 +455,19 @@ class _UpdateTaskState extends State<UpdateTask> {
     }
   }
 
-  void testAddress() async {
-    try{
+
+
+  // Fonction qui permet de vérifier si l'adresse entrée existe
+  Future<bool> testAddress() async {
+    try {
       List<Location> locations = await locationFromAddress(_addressController.text);
+      _lat = locations.last.latitude.toString();
+      _lng = locations.last.longitude.toString();
       _testAddress = true;
-    }catch(e){
+    } catch(e) {
       _testAddress = false;
     }
+    return _testAddress;
   }
 
 }

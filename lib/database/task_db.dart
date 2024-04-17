@@ -25,7 +25,7 @@ class TaskDB {
   }
 
   // Fonction qui permet d'insérer des données dans notre BDD
-  Future<int> create({required String name, String? description, int? priority, String? date, String? lat, String? lng , String? address}) async {
+  Future<int> create({required String name, String? description, int? priority, String? date, String? lat, String? lng, String? address}) async {
     // Vérifier que la BDD existe
     final database = await DatabaseService().database;
     // Si oui alors on peut insérer des données

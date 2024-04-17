@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -269,11 +268,14 @@ class _HomePageState extends State<HomePage> {
           child: const Icon(Icons.add, color: Colors.black),
           // Au click afficher le BottomSheet pour créer une tâche
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTask()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateTask()));
           },
         )
     );
   }
+
+
+
 
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
@@ -284,6 +286,7 @@ class _HomePageState extends State<HomePage> {
       automaticallyImplyLeading: false,
     );
   }
+
 
 
   // Fonction pour vérifier si l'utilisateur a entré une date ou non
@@ -301,7 +304,6 @@ class _HomePageState extends State<HomePage> {
     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
   );
-
 
 
 

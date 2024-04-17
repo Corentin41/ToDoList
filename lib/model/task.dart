@@ -7,11 +7,11 @@ class Task {
   int priority;
   int isDone;
   final String? date;
-  final String createdAt;
-  final String? updatedAt;
   final String? lat;
   final String? lng;
   final String? address;
+  final String createdAt;
+  final String? updatedAt;
 
   Task({
     required this.id,
@@ -20,11 +20,11 @@ class Task {
     required this.priority,
     required this.isDone,
     this.date,
-    required this.createdAt,
-    this.updatedAt,
     this.lat,
     this.lng,
-    this.address
+    this.address,
+    required this.createdAt,
+    this.updatedAt,
   });
 
   // Fonction qui permet de récupérer les données depuis la BDD

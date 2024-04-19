@@ -258,7 +258,7 @@ class _HomePageState extends State<HomePage> {
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      title: const Text('Mes tâches', style: TextStyle(color: Colors.black)),
+      title: const Text('Mes tâches'),
       // Désactiver la possibilité de retour lors de l'affichage des tâches
       automaticallyImplyLeading: false,
       actions: [
@@ -305,10 +305,7 @@ class _HomePageState extends State<HomePage> {
                     },
                 );
           },
-          icon: Icon(
-            Icons.settings,
-            color: Theme.of(context).colorScheme.background,
-          )
+          icon: const Icon(Icons.settings)
           );
         })
       ],

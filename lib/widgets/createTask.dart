@@ -53,6 +53,7 @@ class _CreateTaskState extends State<CreateTask> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ajouter une tâche'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
         // Espace entre l'AppBar et le Form

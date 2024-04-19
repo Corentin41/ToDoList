@@ -85,6 +85,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.background,
         appBar: _buildAppBar(),
 
         body: Stack(
@@ -164,14 +165,14 @@ class _HomePageState extends State<HomePage> {
                                 color: task.priority == 1
                                     ? task.isDone == 0
                                 // Tâche prioritaire en cours => orange
-                                    ? Colors.orange
+                                    ? Colors.orange.shade300
                                 // Tâche prioritaire terminée => grey
                                     : Colors.grey
                                     : task.isDone == 0
                                 // Tâche en cours => lime
-                                    ? Colors.lime
+                                    ? Theme.of(context).colorScheme.secondary
                                 // Tâche terminée => grey
-                                    : Colors.grey,
+                                    : Theme.of(context).colorScheme.tertiary,
                                 // Si la tâche est terminée alors elle est grisée
 
                                 child: ListTile(
@@ -186,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                                     icon: task.isDone == 0
                                         ? const Icon(Icons.check_box_outline_blank)
                                         : const Icon(Icons.check_box),
-                                    color: Colors.blueAccent,
+                                    color: task.isDone == 1 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.background,
                                     // Au click sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
                                     onPressed: () {
                                       setState(() {
@@ -207,6 +208,7 @@ class _HomePageState extends State<HomePage> {
                                   title: Text(
                                     task.name,
                                     style: TextStyle(
+                                      color: task.isDone == 1 ? Colors.white : Colors.black,
                                       fontSize: 16,
                                       overflow: TextOverflow.ellipsis,
                                       // Si la tâche est terminée (isDone à 1) alors barrer le titre
@@ -219,6 +221,7 @@ class _HomePageState extends State<HomePage> {
                                       ? Text(
                                     task.date!,
                                     style: TextStyle(
+                                      color: task.isDone == 1 ? Colors.white : Colors.black,
                                       // Si la tâche est terminée (isDone à 1) alors barrer le titre
                                       decoration: task.isDone == 1 ? TextDecoration.lineThrough : null,
                                     ),
@@ -227,7 +230,7 @@ class _HomePageState extends State<HomePage> {
 
                                   // Bouton pour supprimer avec confirmation
                                   trailing: Container(
-                                    margin: const EdgeInsets.only(left: 5),
+                                    margin: const EdgeInsets.only(left: 5,top: 10,bottom: 10),
                                     decoration: BoxDecoration(
                                         color: Colors.red,
                                         borderRadius: BorderRadius.circular(5)),
@@ -264,7 +267,7 @@ class _HomePageState extends State<HomePage> {
 
         // Ajouter une nouvelle tâche
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.green,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           child: const Icon(Icons.add, color: Colors.black),
           // Au click afficher le BottomSheet pour créer une tâche
           onPressed: () {
@@ -280,7 +283,7 @@ class _HomePageState extends State<HomePage> {
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.green,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       title: const Text('Mes tâches', style: TextStyle(color: Colors.black)),
       // Désactiver la possibilité de retour lors de l'affichage des tâches
       automaticallyImplyLeading: false,

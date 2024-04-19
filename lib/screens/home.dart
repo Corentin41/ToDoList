@@ -87,37 +87,11 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         backgroundColor: Theme.of(context).colorScheme.background,
         appBar: _buildAppBar(),
-
         body: Stack(
           children: [
-
-            // Bouton pour trier la liste des tâches
-            Container(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: DropdownMenu<String>(
-                  // Afficher le nom du tri par défaut
-                  hintText: _sortPref,
-                  onSelected: (String? value) {
-                    setState(() {
-                      // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
-                      _saveSortPref(value.toString());
-                      loadTasks();
-                    });
-                  },
-                  // Contient les différents choix pour trier la liste
-                  dropdownMenuEntries: myPrefs.map<DropdownMenuEntry<String>>((String value) {
-                    return DropdownMenuEntry<String>(value: value, label: value);
-                  }).toList(),
-                ),
-              ),
-            ),
-
-
             // Affichage de la liste des tâches
             Container(
-              margin: const EdgeInsets.only(top: 100),
+              margin: const EdgeInsets.only(top: 20),
               child: FutureBuilder<List<Task>>(
                 future: futureTasks,
                 builder: (context, snapshot) {
@@ -287,6 +261,57 @@ class _HomePageState extends State<HomePage> {
       title: const Text('Mes tâches', style: TextStyle(color: Colors.black)),
       // Désactiver la possibilité de retour lors de l'affichage des tâches
       automaticallyImplyLeading: false,
+      actions: [
+        Builder(builder: (context){
+          return IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SizedBox(
+                        height: 400,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                const Text('Changer l\'ordre des taches'),
+                                DropdownMenu<String>(
+                                  // Afficher le nom du tri par défaut
+                                  hintText: _sortPref,
+                                  onSelected: (String? value) {
+                                    setState(() {
+                                      // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
+                                      _saveSortPref(value.toString());
+                                      loadTasks();
+                                    });
+                                  },
+                                  // Contient les différents choix pour trier la liste
+                                  dropdownMenuEntries: myPrefs.map<DropdownMenuEntry<String>>((String value) {
+                                    return DropdownMenuEntry<String>(value: value, label: value);
+                                  }).toList(),
+                                ),
+                                ElevatedButton(
+                                  child: const Text('Close'),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                );
+          },
+          icon: Icon(
+            Icons.settings,
+            color: Theme.of(context).colorScheme.background,
+          )
+          );
+        })
+      ],
     );
   }
 

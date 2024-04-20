@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/home.dart';
-import 'package:http/http.dart' as http;
 
 
 import '../database/task_db.dart';
@@ -40,16 +40,6 @@ class _UpdateTaskState extends State<UpdateTask> {
   String _lng = '';
 
 
-  // Initialiser les String pour les températures
-  String _tempMin = '';
-  String _tempActuelle = '';
-  String _tempMax = '';
-
-
-  // Initialiser le chemin de l'icone
-  String _icon = '';
-
-
   // Booléen permettant de vérifier si l'adresse saisie est correcte
   bool _testAddress = true;
 
@@ -68,10 +58,6 @@ class _UpdateTaskState extends State<UpdateTask> {
     _lat = widget.task.lat!;
     _lng = widget.task.lng!;
     _addressController.text = widget.task.address!;
-    // Récupérer les informations météo de cette adresse
-    if (_lat.isNotEmpty && _lng.isNotEmpty) {
-      setWeatherDetails(_lat, _lng);
-    }
   }
 
 
@@ -197,87 +183,6 @@ class _UpdateTaskState extends State<UpdateTask> {
 
 
 
-                    // Affichage de l'adresse sur une map
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                      child: widget.task.address!.isNotEmpty
-                          ? // Afficher la map s'il y a une adresse stockée en BDD
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        height: 240,
-                        child: FlutterMap(
-                          options: MapOptions(
-                              initialCenter: LatLng(widget.task.getDoubleLat(),
-                                  widget.task.getDoubleLng()),
-                              initialZoom: 11,
-                            
-                          ),
-                          children: [
-                            openStreetMapTilelayer,
-                            MarkerLayer(
-                                markers: [
-                                  Marker(
-                                      width: 80.0,
-                                      height: 80.0,
-                                      point: LatLng(widget.task.getDoubleLat(), widget.task.getDoubleLng()),
-                                      child: const Icon(
-                                        Icons.location_pin,
-                                        color: Colors.red,
-                                        size: 50.0,
-                                      ),
-                                  )
-                                ]
-                            ),
-                          ],
-                        ),
-                      ) : // Sinon afficher un message
-                      Container(
-                          padding: const EdgeInsets.all(10),
-                          child: const Text(
-                              "Aucune adresse renseignée", style: TextStyle(
-                              fontWeight: FontWeight.bold))
-                      ),
-                    ),
-
-
-
-                    // Affichage des données météo
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                      child: widget.task.address!.isNotEmpty
-                        ? // Afficher la météo s'il y a une adresse stockée en BDD
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            // Temp Actuelle
-                            children: [
-                              const Text("Actuellement"),
-                              Text(_tempActuelle),
-                            ],
-                          ),
-                          // Icon météo
-                          Container(
-                              child: _icon.isNotEmpty
-                              // Si on trouve un icone lié à la météo alors l'afficher
-                                  ? Image.network('http://openweathermap.org/img/w/$_icon.png', fit: BoxFit.cover)
-                              // Par défaut on n'affiche rien
-                                  : null
-                          ),
-                          // Temp Min Max
-                          Column(
-                            children: [
-                              const Text("min / max"),
-                              Text("$_tempMin / $_tempMax"),
-                            ],
-                          )
-                        ],
-                      ) : // Sinon ne rien afficher
-                      null
-                    ),
-
-
-
                     // Modifier le niveau de priorité de la tâche
                     Padding(
                       padding: const EdgeInsets.only(
@@ -337,26 +242,13 @@ class _UpdateTaskState extends State<UpdateTask> {
                                       // Récupérer les coordonnées à partir de l'adresse entrée
                                       await testAddress();
                                       if (_testAddress == false) {
-                                        return showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: const Center(child: Text('Adresse incorrecte !')),
-                                              actionsAlignment: MainAxisAlignment.center,
-                                              actions: [
-                                                // Annuler et fermer la popup
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                                  onPressed: () {
-                                                    // Terminer le context
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('Fermer',
-                                                    style: TextStyle(color: Colors.white),),
-                                                ),
-                                              ],
-                                            );
-                                          },
+                                        // Afficher une AlertDialog custom avec le package QuickAlert
+                                        return QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.warning,
+                                            title: 'Attention',
+                                            text: 'Vous avez saisi une adresse incorrecte ou inexistante',
+                                            confirmBtnText: 'OK'
                                         );
                                       }
                                     }
@@ -418,43 +310,6 @@ class _UpdateTaskState extends State<UpdateTask> {
       return true;
     }
     return false;
-  }
-
-
-
-  // Fonction pour récupérer l'adresse en fonction des coordonnées stockées en BDD
-  void setWeatherDetails(String lat, String lng) async {
-    double latitude = double.parse(lat);
-    double longitude = double.parse(lng);
-
-    List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
-    String city = placemarks.first.locality!;
-    _getWeather(city);
-  }
-
-
-
-  //Fonction pour récupérer les données météo de la ville passée en paramètre
-  Future<void> _getWeather(String city) async {
-    const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
-    final apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric&lang=fr';
-
-    final reponse = await http.get(Uri.parse(apiUrl));
-
-    if (reponse.statusCode == 200) {
-      Map<String, dynamic> meteoData = json.decode(reponse.body);
-      setState(() {
-        // Récupérer les températures
-        _tempMin = '${meteoData['main']['temp_min']}°C';
-        _tempActuelle = '${meteoData['main']['temp_min']}°C';
-        _tempMax = '${meteoData['main']['temp']}°C';
-
-        // Récupérer le type d'icone
-        _icon = '${meteoData['weather'][0]['icon']}';
-      });
-    } else {
-      throw Exception('Echec lors de la récupération des données');
-    }
   }
 
 

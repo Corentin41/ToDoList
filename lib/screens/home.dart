@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/widgets/displayTask.dart';
 import 'package:todolist/widgets/updateTask.dart';
@@ -225,11 +227,24 @@ class _HomePageState extends State<HomePage> {
                                       icon: const Icon(Icons.delete),
                                       // Appel à la fonction deleteTask
                                       onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return deleteTask(task);
-                                          },
+                                        // Afficher une AlertDialog custom avec le package QuickAlert
+                                        QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.confirm,
+                                            title: 'Suppression de la tâche',
+                                            text: 'Confirmer la suppression de la tâche ?',
+                                            confirmBtnText: 'Supprimer',
+                                            confirmBtnColor: Colors.red,
+                                            cancelBtnText: 'Annuler',
+                                            onConfirmBtnTap: () {
+                                              setState(() {
+                                                // Appel à la méthode delete de la BDD pour supprimer la tâche
+                                                taskDB.delete(task.id);
+                                                // Rafraîchir l'affichage des tâches
+                                                loadTasks();
+                                                Navigator.pop(context);
+                                              });
+                                            }
                                         );
                                       },
                                     ),
@@ -340,44 +355,5 @@ class _HomePageState extends State<HomePage> {
     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     userAgentPackageName: 'dev.fleaflet.flutter_map.example',
   );
-
-
-
-  // Fonction pour supprimer une tâche
-  deleteTask(Task task) {
-    return AlertDialog(
-
-      title: const Center(child: Text('Supprimer la tâche')),
-
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        // Confirmer la supression de la tâche
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          onPressed: () {
-            setState(() {
-              // Appel à la méthode delete de la BDD pour supprimer la tâche
-              taskDB.delete(task.id);
-              // Rafraîchir l'affichage des tâches
-              loadTasks();
-              Navigator.pop(context);
-            });
-          },
-          child: const Text('Confirmer', style: TextStyle(color: Colors.white),),
-        ),
-
-        // Annuler et fermer la popup
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () {
-            // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
-            Navigator.pop(context);
-          },
-          child: const Text('Annuler',
-            style: TextStyle(color: Colors.white),),
-        ),
-      ],
-    );
-  }
 
 }

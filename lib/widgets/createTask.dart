@@ -225,8 +225,8 @@ class _CreateTaskState extends State<CreateTask> {
                                             ElevatedButton(
                                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                               onPressed: () {
-                                                // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
-                                                Navigator.of(context).pop();
+                                                // Terminer le context
+                                                Navigator.pop(context);
                                               },
                                               child: const Text('Fermer',
                                                 style: TextStyle(color: Colors.white),),
@@ -248,6 +248,7 @@ class _CreateTaskState extends State<CreateTask> {
                                       address: _addressController.text
                                   );
                                   // Retourner sur la page d'affichage des tâches
+                                  Navigator.pop(context);
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },

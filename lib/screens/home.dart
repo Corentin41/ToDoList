@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todolist/widgets/displayTask.dart';
 import 'package:todolist/widgets/updateTask.dart';
 
 import '../database/task_db.dart';
@@ -150,10 +151,12 @@ class _HomePageState extends State<HomePage> {
                                 // Si la tâche est terminée alors elle est grisée
 
                                 child: ListTile(
-                                  // Au click sur la tâche peut la modifier
+                                  // Au click sur la tâche peut voir les détails
                                   onTap: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
+                                    DisplayTask.showTask(context, task);
                                   },
+
+
 
                                   // Icon indiquant si la tâche est terminée ou non
                                   leading: IconButton(
@@ -162,6 +165,7 @@ class _HomePageState extends State<HomePage> {
                                         ? const Icon(Icons.check_box_outline_blank)
                                         : const Icon(Icons.check_box),
                                     color: task.isDone == 1 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.background,
+                                    
                                     // Au click sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
                                     onPressed: () {
                                       setState(() {
@@ -178,6 +182,8 @@ class _HomePageState extends State<HomePage> {
                                     },
                                   ),
 
+
+
                                   // Affiche le titre de la tâche
                                   title: Text(
                                     task.name,
@@ -189,6 +195,8 @@ class _HomePageState extends State<HomePage> {
                                       decoration: task.isDone == 1 ? TextDecoration.lineThrough : null,
                                     ),
                                   ),
+
+
 
                                   // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
                                   subtitle: checkDate(task) == true
@@ -202,12 +210,15 @@ class _HomePageState extends State<HomePage> {
                                   )
                                       : null,
 
+
+
                                   // Bouton pour supprimer avec confirmation
                                   trailing: Container(
                                     margin: const EdgeInsets.only(left: 5,top: 10,bottom: 10),
                                     decoration: BoxDecoration(
                                         color: Colors.red,
-                                        borderRadius: BorderRadius.circular(5)),
+                                        borderRadius: BorderRadius.circular(5)
+                                    ),
                                     child: IconButton(
                                       color: Colors.white,
                                       iconSize: 16,
@@ -360,7 +371,7 @@ class _HomePageState extends State<HomePage> {
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () {
             // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
-            Navigator.of(context).pop();
+            Navigator.pop(context);
           },
           child: const Text('Annuler',
             style: TextStyle(color: Colors.white),),

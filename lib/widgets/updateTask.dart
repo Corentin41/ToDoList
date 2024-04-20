@@ -88,6 +88,7 @@ class _UpdateTaskState extends State<UpdateTask> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Modifier la tâche'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
         // Espace entre l'AppBar et le Form

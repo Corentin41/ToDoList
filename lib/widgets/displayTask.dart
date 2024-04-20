@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,240 +17,343 @@ class DisplayTask extends StatelessWidget {
   const DisplayTask({super.key, required this.task});
 
 
-
-  static void showTask(context, Task task) {
-    // Récupérer la taille de l'écran
-    Size size = MediaQuery.of(context).size;
-
-    // Récupérer les données météo
-    //List<String> weatherResponse = _getWeather() as List<String>;
-
-    /*if (task.lat.toString().isNotEmpty && task.lng.toString().isNotEmpty) {
-      setWeatherDetails(task.lat, task.lng);
-    }*/
-
-
-    showModalBottomSheet(
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(40.0),
-      ),
-      context: context,
-      builder: (BuildContext bc) {
-        // Détails du ModalBottomSheet
-        return Container(
-          height: size.height * 0.8,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(topRight: Radius.circular(40.0), topLeft: Radius.circular(40.0)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-            child: Column(
-              // Faire redescendre le ModalBottomSheet vers le bas pour le fermer
-              //physics: const ClampingScrollPhysics(),
-              children: [
-
-
-                // Bouton pour modifier la tâche
-                Container(
-                  height: 50,
-                  margin: const EdgeInsets.only(top: 10, left: 300),
-                  decoration: BoxDecoration(
-                    color: Colors.blueAccent,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: IconButton(
-                    color: Colors.white,
-                    iconSize: 16,
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      // Aller sur la page pour modifier la tâche
-                      Navigator.of(context).pop();
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
-                    },
-                  ),
-                ),
-
-
-
-                // Titre de la tâche
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text('Titre : ${task.name}',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-
-
-                // Description de la tâche
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    // S'il n'y a pas de description alors on précise
-                    task.description.isEmpty
-                        ? 'Description : Aucune description pour cette tâche'
-                        : 'Description :${task.description}',
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-
-
-
-                // Date de la tâche
-                Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text('Date : ${task.date.toString()}',
-                      style: const TextStyle(fontSize: 15),
-                    ),
-                ),
-
-
-
-                // Adresse de la tâche
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    // S'il n'y a pas d'adresse alors on précise
-                    task.address.toString().isEmpty
-                        ? 'Adresse : Aucune adresse pour cette tâche'
-                        : 'Adresse : ${task.address}',
-                    style: const TextStyle(fontSize: 15),
-                  ),
-                ),
-
-
-
-                // Afficher l'adresse sur une map (seulement s'il y a une adresse)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: task.address.toString().isNotEmpty
-                    ? Container(
-                    padding: const EdgeInsets.all(10),
-                    height: 240,
-                    child: FlutterMap(
-                      options: MapOptions(
-                        initialCenter: LatLng(task.getDoubleLat(),
-                            task.getDoubleLng()),
-                        initialZoom: 11,
-
-                      ),
-                      children: [
-                        // Pour afficher la map centrée sur l'adresse entrée précédemment
-                        TileLayer(
-                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-                        ),
-                        MarkerLayer(
-                            markers: [
-                              Marker(
-                                width: 80.0,
-                                height: 80.0,
-                                point: LatLng(task.getDoubleLat(), task.getDoubleLng()),
-                                child: const Icon(
-                                  Icons.location_pin,
-                                  color: Colors.red,
-                                  size: 50.0,
-                                ),
-                              )
-                            ]
-                        ),
-                      ],
-                    ),
-                  ) : null,
-                ),
-
-
-
-                // Affichage des données météo
-                /*Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: task.address.toString().isNotEmpty
-                        ? // Afficher la météo s'il y a une adresse stockée en BDD
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          // Temp Actuelle
-                          children: [
-                            const Text("Actuellement"),
-                            Text(_tempActuelle),
-                          ],
-                        ),
-                        // Icon météo
-                        Container(
-                            child: _icon.isNotEmpty
-                            // Si on trouve un icone lié à la météo alors l'afficher
-                                ? Image.network('http://openweathermap.org/img/w/$_icon.png', fit: BoxFit.cover)
-                            // Par défaut on n'affiche rien
-                                : null
-                        ),
-                        // Temp Min Max
-                        Column(
-                          children: [
-                            const Text("min / max"),
-                            Text("$_tempMin / $_tempMax"),
-                          ],
-                        )
-                      ],
-                    ) : null
-                ),*/
-
-
-
-
-
-
-
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-
-
-  // Fonction pour récupérer l'adresse en fonction des coordonnées stockées en BDD
-  void setWeatherDetails(String lat, String lng) async {
-    double latitude = double.parse(lat);
-    double longitude = double.parse(lng);
-
-    List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
-    String city = placemarks.first.locality!;
-    _getWeather(city);
-  }
-
-
-
-  //Fonction pour récupérer les données météo de la ville passée en paramètre
-  Future<List<String>> _getWeather(String city) async {
-    const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
-    final apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric&lang=fr';
-
-    List<String> weatherResponse = [];
-
-    final reponse = await http.get(Uri.parse(apiUrl));
-
-    if (reponse.statusCode == 200) {
-      Map<String, dynamic> meteoData = json.decode(reponse.body);
-      // Récupérer les températures
-      weatherResponse.add('${meteoData['main']['temp_min']}°C');
-      weatherResponse.add('${meteoData['main']['temp_min']}°C');
-      weatherResponse.add('${meteoData['main']['temp']}°C');
-      weatherResponse.add('${meteoData['weather'][0]['icon']}');
-      return weatherResponse;
-    } else {
-      throw Exception('Echec lors de la récupération des données');
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     throw UnimplementedError();
+  }
+
+
+  static Future<void> showTask(context, Task task) async {
+    // Récupérer la taille de l'écran
+    Size size = MediaQuery.of(context).size;
+
+
+    // Pour les données météo
+    String _tempMin = '';
+    String _tempActuelle = '';
+    String _tempMax = '';
+    String _icon = '';
+
+
+    // Si on a une adresse pour la tâche alors on peut récupérer la météo
+    if (task.lat.toString().isNotEmpty && task.lng.toString().isNotEmpty) {
+      double latitude = double.parse(task.lat.toString());
+      double longitude = double.parse(task.lng.toString());
+
+      // Récupérer la météo à partir d'une ville
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      String city = placemarks.first.locality!;
+
+
+      // Appel à l'API Météo
+      const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
+      final apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric&lang=fr';
+
+      final reponse = await http.get(Uri.parse(apiUrl));
+
+      if (reponse.statusCode == 200) {
+        Map<String, dynamic> meteoData = json.decode(reponse.body);
+        // Récupérer les températures
+        _tempMin = '${meteoData['main']['temp_min']}°C';
+        _tempActuelle = '${meteoData['main']['temp_min']}°C';
+        _tempMax = '${meteoData['main']['temp']}°C';
+
+        // Récupérer le type d'icone
+        _icon = '${meteoData['weather'][0]['icon']}';
+      } else {
+        throw Exception('Echec lors de la récupération des données');
+      }
+    }
+
+
+    // Affichage des données de la tâche dans un BottomSheet
+    showModalBottomSheet(
+      isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: double.maxFinite),
+      context: context,
+      builder: (BuildContext bc) {
+
+        // Détails du BottomSheet
+        return Container(
+          height: size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topRight: Radius.circular(40.0), topLeft: Radius.circular(40.0)),
+          ),
+          child: Column(
+            children: [
+
+
+
+              // En-tête du BottomSheet
+              Column(
+                children: [
+
+                  // Affichage d'une petite barre
+                  Padding(
+                    padding: const EdgeInsets.only(left: 150, top: 20, right: 150, bottom: 20),
+                    child: Container(
+                      height: 8,
+                      width: 80,
+                      decoration: const BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                    ),
+                  ),
+
+                  // Affichage d'un titre
+                  const Text(
+                    'Description de la tâche',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+
+                  // Affichage d'une petite barre pour séparer l'en-tête du contenu
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: Container(
+                      height: 1,
+                      width: double.maxFinite,
+                      decoration: const BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+
+
+              // Contenu du BottomSheet
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+
+
+
+                        // Pour les infos primaires
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Titre de la tâche et un bouton pour modifier la tâche
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+
+                                    // Titre de la tâche (Flexible pour le overflow)
+                                    Flexible(
+                                      child: Text(task.name,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Bouton pour modifier la tâche
+                                    Container(
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: IconButton(
+                                        color: Colors.lightBlue,
+                                        iconSize: 16,
+                                        icon: const Icon(Icons.edit, color: Colors.black),
+                                        onPressed: () {
+                                          // Aller sur la page pour modifier la tâche
+                                          Navigator.pop(context);
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+
+
+                                // Description de la tâche (SizedBox pour gérer le texte qui déborde)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  child: SizedBox(
+                                    // S'il n'y a pas de description alors on précise
+                                    child: task.description.isEmpty
+                                        ? const Text('Aucune description pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                        : Text(task.description),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+
+
+
+
+
+                        // Date de la tâche
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 10),
+                                  child: Icon(Icons.event_note, color: Colors.black),
+                                ),
+                                // S'il n'y a pas de description alors on précise
+                                task.date.toString().isEmpty
+                                    ? const Text('Aucune date pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                    : Text(task.date.toString())
+                              ],
+                            ),
+                          ),
+                        ),
+
+
+
+
+
+                        // Informations concernant l'adresse (adresse, map et météo)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlue,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                // Adresse de la tâche
+                                Row(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Icon(IconData(0xe3ab, fontFamily: 'MaterialIcons'), color: Colors.black),
+                                    ),
+                                    // S'il n'y a pas de d'adresse alors on précise
+                                    task.address.toString().isEmpty
+                                        ? const Text('Aucune adresse pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                        : Flexible(child: Text(task.address.toString()))
+                                  ],
+                                ),
+
+
+
+                                // Adresse sur une map (seulement s'il y a une adresse stockée en BDD)
+                                Container(
+                                  child: task.address.toString().isNotEmpty ?
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 20),
+                                    height: 240,
+                                    child: FlutterMap(
+                                      options: MapOptions(
+                                        initialCenter: LatLng(task.getDoubleLat(),
+                                            task.getDoubleLng()),
+                                        initialZoom: 11,
+
+                                      ),
+                                      children: [
+                                        // Pour afficher la map centrée sur l'adresse entrée précédemment
+                                        TileLayer(
+                                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                                        ),
+                                        MarkerLayer(
+                                            markers: [
+                                              Marker(
+                                                width: 80.0,
+                                                height: 80.0,
+                                                point: LatLng(task.getDoubleLat(), task.getDoubleLng()),
+                                                child: const Icon(
+                                                  Icons.location_pin,
+                                                  color: Colors.red,
+                                                  size: 50.0,
+                                                ),
+                                              )
+                                            ]
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                  // Sinon ne rien afficher
+                                  : null
+                                ),
+
+
+
+                                // Données météo relatives à l'adresse
+                                Container(
+                                  // Afficher la météo seulement s'il y a une adresse stockée en BDD
+                                  child: task.address.toString().isNotEmpty ?
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 20),
+                                    child:
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          // Temp Actuelle
+                                          children: [
+                                            const Text("Actuellement"),
+                                            Text(_tempActuelle),
+                                          ],
+                                        ),
+                                        // Icon météo
+                                        Container(
+                                            child: _icon.isNotEmpty
+                                            // Si on trouve un icone lié à la météo alors l'afficher
+                                                ? Image.network('http://openweathermap.org/img/w/$_icon.png', fit: BoxFit.cover)
+                                            // Par défaut on n'affiche rien
+                                                : null
+                                        ),
+                                        // Temp Min Max
+                                        Column(
+                                          children: [
+                                            const Text("min / max"),
+                                            Text("$_tempMin / $_tempMax"),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  )
+                                  // Sinon ne rien afficher
+                                  : null
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        );
+      },
+    );
   }
 }

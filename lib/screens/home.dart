@@ -348,7 +348,7 @@ class _HomePageState extends State<HomePage> {
           style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () {
             // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
-            Navigator.of(context).pop();
+            Navigator.pop(context);
           },
           child: const Text('Annuler',
             style: TextStyle(color: Colors.white),),

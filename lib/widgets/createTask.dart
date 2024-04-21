@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/home.dart';
-
 import '../database/task_db.dart';
 
 class CreateTask extends StatefulWidget {
@@ -214,26 +215,13 @@ class _CreateTaskState extends State<CreateTask> {
 
                                   // Si l'adresse saisie n'existe pas alors retourner une AlertDialog
                                   if (_addressController.text.isNotEmpty && _testAddress == false) {
-                                    return showDialog(
+                                    // Afficher une AlertDialog custom avec le package QuickAlert
+                                    return QuickAlert.show(
                                       context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: const Center(child: Text('Adresse incorrecte !')),
-                                          actionsAlignment: MainAxisAlignment.center,
-                                          actions: [
-                                            // Annuler et fermer la popup
-                                            ElevatedButton(
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                              onPressed: () {
-                                                // Terminer le context
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Fermer',
-                                                style: TextStyle(color: Colors.white),),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                      type: QuickAlertType.warning,
+                                      title: 'Attention',
+                                      text: 'Vous avez saisi une adresse incorrecte ou inexistante',
+                                      confirmBtnText: 'OK'
                                     );
                                   }
 

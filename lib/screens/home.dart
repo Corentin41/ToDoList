@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/widgets/displayTask.dart';
-import 'package:todolist/widgets/updateTask.dart';
-
 import '../database/task_db.dart';
 import '../model/task.dart';
 import '../widgets/createTask.dart';
@@ -23,11 +22,13 @@ class _HomePageState extends State<HomePage> {
 
   // Liste qui contient les titres pour trier la liste des tâches
   List<String> myPrefs = ['Priorité','Date de création','Date d\'échéance'];
-  // Initialiser le choix du tri de la liste à niveau de Priorité
-  String _sortPref = ''; // Pour l'affichage
-  bool _displayPref = true; // pour l'affichage des tâches terminées
+  
+  // Initialiser les SharedPrefs
+  String _sortPref = ''; // Pour le tri de la liste
+  bool _displayPref = true; // Pour l'affichage des tâches terminées
   String _orderBy = ''; // Pour la BDD
 
+  
   @override
   void initState() {
     super.initState();
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  
   // Fonction qui permet de récupérer toutes les tâches stockées en BDD
   void loadTasks() async {
 
@@ -69,6 +71,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  
   // Récupérer depuis les SharedPreferences le choix du tri de la liste
   Future<String> _getSortPref() async {
     final prefs = await SharedPreferences.getInstance();
@@ -82,17 +85,20 @@ class _HomePageState extends State<HomePage> {
     prefs.setString('sortPref', value);
   }
 
+  // Récupérer depuis les SharedPreferences le choix d'affichage des tâches terminées
   Future<bool> _getDisplayPref() async {
     final prefs = await SharedPreferences.getInstance();
     _displayPref = prefs.getBool('displayPref') ?? true;
     return _displayPref;
   }
 
+  // Stocker dans les SharedPreferences le choix d'affichage des tâches terminées
   Future<void> _saveDisplayPref(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('displayPref', value);
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,9 +146,13 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 taskDB.delete(task.id);
                                 loadTasks();
+                                // Afficher un message indiquant que la tâche a été supprimée
+                                notifDelete();
                               });
                             },
-                            child: ( !_displayPref && task.isDone==1) ? Container() : Container(
+                            
+                            // Si la tâche est terminée et que le choix est de ne pas les afficher alors ne rien retourner
+                            child: (!_displayPref && task.isDone == 1) ? null : Container(
                               margin: const EdgeInsets.all(5),
 
                               // Couleur de fond des tâches
@@ -235,11 +245,26 @@ class _HomePageState extends State<HomePage> {
                                       icon: const Icon(Icons.delete),
                                       // Appel à la fonction deleteTask
                                       onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return deleteTask(task);
-                                          },
+                                        // Afficher une AlertDialog custom avec le package QuickAlert
+                                        QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.confirm,
+                                            title: 'Suppression de la tâche',
+                                            text: 'Confirmer la suppression de la tâche ?',
+                                            confirmBtnText: 'Supprimer',
+                                            confirmBtnColor: Colors.red,
+                                            cancelBtnText: 'Annuler',
+                                            onConfirmBtnTap: () {
+                                              setState(() {
+                                                // Appel à la méthode delete de la BDD pour supprimer la tâche
+                                                taskDB.delete(task.id);
+                                                // Rafraîchir l'affichage des tâches
+                                                loadTasks();
+                                                // Afficher un message indiquant que la tâche a été supprimée
+                                                notifDelete();
+                                                Navigator.pop(context);
+                                              });
+                                            }
                                         );
                                       },
                                     ),
@@ -271,6 +296,7 @@ class _HomePageState extends State<HomePage> {
         )
     );
   }
+
 
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
@@ -358,49 +384,12 @@ class _HomePageState extends State<HomePage> {
 
 
 
-  // Pour afficher la map
-  TileLayer get openStreetMapTilelayer => TileLayer(
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-  );
-
-
-
-  // Fonction pour supprimer une tâche
-  deleteTask(Task task) {
-    return AlertDialog(
-
-      title: const Center(child: Text('Supprimer la tâche')),
-
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        // Confirmer la supression de la tâche
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          onPressed: () {
-            setState(() {
-              // Appel à la méthode delete de la BDD pour supprimer la tâche
-              taskDB.delete(task.id);
-              // Rafraîchir l'affichage des tâches
-              loadTasks();
-              Navigator.pop(context);
-            });
-          },
-          child: const Text('Confirmer', style: TextStyle(color: Colors.white),),
-        ),
-
-        // Annuler et fermer la popup
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-          onPressed: () {
-            // Logique à exécuter lorsque l'utilisateur appuie sur le bouton
-            Navigator.pop(context);
-          },
-          child: const Text('Annuler',
-            style: TextStyle(color: Colors.white),),
-        ),
-      ],
+  // Fonction pour informer que la tâche a bien été supprimée
+  notifDelete() {
+    // Afficher un message indiquant que la tâche a été supprimée
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        content: const Text('Tâche supprimée avec succès')),
     );
   }
-
 }

@@ -1,6 +1,5 @@
 import 'package:todolist/database/database_service.dart';
 import 'package:sqflite/sqflite.dart';
-
 import '../model/task.dart';
 
 class TaskDB {

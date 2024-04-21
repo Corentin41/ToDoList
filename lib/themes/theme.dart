@@ -6,8 +6,9 @@ ThemeData lightMode = ThemeData(
     background: Colors.grey.shade50,
     primary: Colors.blue.shade500,
     secondary: Colors.blue.shade300,
-    tertiary: Colors.grey.shade600
-
+    tertiary: Colors.grey.shade600,
+    // Pour le fond dans la description d'une tâche
+    onBackground: Colors.grey.shade300,
   )
 
 );
@@ -18,8 +19,8 @@ ThemeData darkMode = ThemeData(
       background: Colors.grey.shade800,
       primary: Colors.blue.shade500,
       secondary: Colors.blue.shade300,
-      tertiary: Colors.grey.shade600
-
-
+      tertiary: Colors.grey.shade600,
+      // Pour le fond dans la description d'une tâche
+      onBackground: Colors.grey.shade900,
     )
 );

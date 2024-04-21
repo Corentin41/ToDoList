@@ -16,19 +16,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-
   // Liste des tâches et la BDD
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
-
   // Liste qui contient les titres pour trier la liste des tâches
   List<String> myPrefs = ['Priorité','Date de création','Date d\'échéance'];
-  // Initialiser le choix du tri de la liste à niveau de Priorité
-  String _sortPref = ''; // Pour l'affichage
+  
+  // Initialiser les SharedPrefs
+  String _sortPref = ''; // Pour le tri de la liste
+  bool _displayPref = true; // Pour l'affichage des tâches terminées
   String _orderBy = ''; // Pour la BDD
 
-
+  
   @override
   void initState() {
     super.initState();
@@ -45,11 +45,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
+  
   // Fonction qui permet de récupérer toutes les tâches stockées en BDD
   void loadTasks() async {
+
     // Récupérer le choix du tri de la liste provenant des SharedPrefs
     await _getSortPref();
+
+    // Récupérer le choix de l'affichage des tâches terminées provenant des SharedPrefs
+    await _getDisplayPref();
+
     setState(()  {
       // Adapter le nom du _sortPref pour pouvoir le passer dans la requête SQL
       if (_sortPref == 'Priorité') {
@@ -66,7 +71,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
+  
   // Récupérer depuis les SharedPreferences le choix du tri de la liste
   Future<String> _getSortPref() async {
     final prefs = await SharedPreferences.getInstance();
@@ -74,14 +79,26 @@ class _HomePageState extends State<HomePage> {
     return _sortPref;
   }
 
-
   // Stocker dans les SharedPreferences le choix du tri de la liste
   Future<void> _saveSortPref(String value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('sortPref', value);
   }
 
+  // Récupérer depuis les SharedPreferences le choix d'affichage des tâches terminées
+  Future<bool> _getDisplayPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    _displayPref = prefs.getBool('displayPref') ?? true;
+    return _displayPref;
+  }
 
+  // Stocker dans les SharedPreferences le choix d'affichage des tâches terminées
+  Future<void> _saveDisplayPref(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('displayPref', value);
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +150,9 @@ class _HomePageState extends State<HomePage> {
                                 notifDelete();
                               });
                             },
-                            child: Container(
+                            
+                            // Si la tâche est terminée et que le choix est de ne pas les afficher alors ne rien retourner
+                            child: (!_displayPref && task.isDone == 1) ? null : Container(
                               margin: const EdgeInsets.all(5),
 
                               // Couleur de fond des tâches
@@ -166,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                                         ? const Icon(Icons.check_box_outline_blank)
                                         : const Icon(Icons.check_box),
                                     color: task.isDone == 1 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.background,
-                                    
+
                                     // Au click sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
                                     onPressed: () {
                                       setState(() {
@@ -279,7 +298,6 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-
   // Fonction pour créer l'AppBar
   AppBar _buildAppBar() {
     return AppBar(
@@ -294,40 +312,56 @@ class _HomePageState extends State<HomePage> {
                 showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return SizedBox(
-                        height: 400,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              children: [
-                                const Text('Changer l\'ordre des taches'),
-                                DropdownMenu<String>(
-                                  // Afficher le nom du tri par défaut
-                                  hintText: _sortPref,
-                                  onSelected: (String? value) {
-                                    setState(() {
-                                      // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
-                                      _saveSortPref(value.toString());
-                                      loadTasks();
-                                    });
-                                  },
-                                  // Contient les différents choix pour trier la liste
-                                  dropdownMenuEntries: myPrefs.map<DropdownMenuEntry<String>>((String value) {
-                                    return DropdownMenuEntry<String>(value: value, label: value);
-                                  }).toList(),
-                                ),
-                                ElevatedButton(
-                                  child: const Text('Close'),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
+                      return StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                        return SizedBox(
+                            height: 400,
+                            width: double.maxFinite,
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                children: [
+                                  const Text('Quel ordre pour l\'affichage des tâches ?'),
+                                  DropdownMenu<String>(
+                                    // Afficher le nom du tri par défaut
+                                    hintText: _sortPref,
+                                    onSelected: (String? value) {
+                                      setState(() {
+                                        // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
+                                        _saveSortPref(value.toString());
+                                        loadTasks();
+                                      });
+                                    },
+                                    // Contient les différents choix pour trier la liste
+                                    dropdownMenuEntries: myPrefs.map<DropdownMenuEntry<String>>((String value) {
+                                      return DropdownMenuEntry<String>(value: value, label: value);
+                                    }).toList(),
+                                  ),
+
+                                  const Text('Afficher les tâches terminées ?'),
+                                  Switch(
+                                    // This bool value toggles the switch.
+                                    value: _displayPref,
+                                    onChanged: (bool value) {
+                                      // This is called when the user toggles the switch.
+                                      setState(() {
+                                        _saveDisplayPref(value);
+                                        loadTasks();
+                                      });
+                                    },
+                                  ),
+                                  ElevatedButton(
+                                    child: const Text('Close'),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                  )
+                                ],
+                              ),
+                            )
+                        );
+                      });
+
                     },
                 );
           },

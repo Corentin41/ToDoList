@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,7 +6,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:todolist/model/task.dart';
-import 'package:todolist/screens/home.dart';
 import 'package:todolist/widgets/updateTask.dart';
 import 'package:http/http.dart' as http;
 
@@ -70,6 +68,7 @@ class DisplayTask extends StatelessWidget {
 
     // Affichage des données de la tâche dans un BottomSheet
     showModalBottomSheet(
+      backgroundColor: Theme.of(context).colorScheme.background,
       isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: double.maxFinite),
       context: context,
@@ -77,9 +76,10 @@ class DisplayTask extends StatelessWidget {
 
         // Détails du BottomSheet
         return Container(
+          // Hauteur du BottomSheet
           height: size.height * 0.7,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            // Arrondir les bords supérieurs du BottomSheet
             borderRadius: BorderRadius.only(topRight: Radius.circular(40.0), topLeft: Radius.circular(40.0)),
           ),
           child: Column(
@@ -90,25 +90,45 @@ class DisplayTask extends StatelessWidget {
               // En-tête du BottomSheet
               Column(
                 children: [
-
                   // Affichage d'une petite barre
                   Padding(
                     padding: const EdgeInsets.only(left: 150, top: 20, right: 150, bottom: 20),
                     child: Container(
                       height: 8,
                       width: 80,
-                      decoration: const BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
                       ),
                     ),
                   ),
 
-                  // Affichage d'un titre
-                  const Text(
-                    'Description de la tâche',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+
+                  // Titre de l'en-tête + Bouton Modifier
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      // Espace pour centrer le titre
+                      const SizedBox(width: 32),
+                      // Titre de l'en-tête
+                      const Text(
+                        'Description de la tâche',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      // Bouton pour modifier la tâche
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 32),
+                        onPressed: () {
+                          // Aller sur la page pour modifier la tâche
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
+                        },
+                      )
+                    ],
                   ),
+
 
                   // Affichage d'une petite barre pour séparer l'en-tête du contenu
                   Padding(
@@ -116,9 +136,9 @@ class DisplayTask extends StatelessWidget {
                     child: Container(
                       height: 1,
                       width: double.maxFinite,
-                      decoration: const BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
                       ),
                     ),
                   ),
@@ -136,12 +156,12 @@ class DisplayTask extends StatelessWidget {
                       children: [
 
 
-
                         // Pour les infos primaires
                         Container(
+                          width: double.maxFinite,
                           margin: const EdgeInsets.only(bottom: 20),
                           decoration: BoxDecoration(
-                            color: Colors.lightBlue,
+                            color: Theme.of(context).colorScheme.onBackground,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Padding(
@@ -149,43 +169,19 @@ class DisplayTask extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Titre de la tâche et un bouton pour modifier la tâche
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
 
-                                    // Titre de la tâche (Flexible pour le overflow)
-                                    Flexible(
-                                      child: Text(task.name,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                // Titre de la tâche (Flexible pour le overflow)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 10),
+                                  child: SizedBox(
+                                    child: Text(task.name,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-
-                                    // Bouton pour modifier la tâche
-                                    Container(
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: IconButton(
-                                        color: Colors.lightBlue,
-                                        iconSize: 16,
-                                        icon: const Icon(Icons.edit, color: Colors.black),
-                                        onPressed: () {
-                                          // Aller sur la page pour modifier la tâche
-                                          Navigator.pop(context);
-                                          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-
-
 
                                 // Description de la tâche (SizedBox pour gérer le texte qui déborde)
                                 Container(
@@ -198,12 +194,9 @@ class DisplayTask extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                            ),
+                            )
                           ),
                         ),
-
-
-
 
 
 
@@ -211,7 +204,7 @@ class DisplayTask extends StatelessWidget {
                         Container(
                           margin: const EdgeInsets.only(bottom: 20),
                           decoration: BoxDecoration(
-                            color: Colors.lightBlue,
+                            color: Theme.of(context).colorScheme.onBackground,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Padding(
@@ -220,7 +213,7 @@ class DisplayTask extends StatelessWidget {
                               children: [
                                 const Padding(
                                   padding: EdgeInsets.only(right: 10),
-                                  child: Icon(Icons.event_note, color: Colors.black),
+                                  child: Icon(Icons.event_note),
                                 ),
                                 // S'il n'y a pas de description alors on précise
                                 task.date.toString().isEmpty
@@ -233,13 +226,11 @@ class DisplayTask extends StatelessWidget {
 
 
 
-
-
                         // Informations concernant l'adresse (adresse, map et météo)
                         Container(
                           margin: const EdgeInsets.only(bottom: 20),
                           decoration: BoxDecoration(
-                            color: Colors.lightBlue,
+                            color: Theme.of(context).colorScheme.onBackground,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Padding(
@@ -251,7 +242,7 @@ class DisplayTask extends StatelessWidget {
                                   children: [
                                     const Padding(
                                       padding: EdgeInsets.only(right: 10),
-                                      child: Icon(IconData(0xe3ab, fontFamily: 'MaterialIcons'), color: Colors.black),
+                                      child: Icon(IconData(0xe3ab, fontFamily: 'MaterialIcons')),
                                     ),
                                     // S'il n'y a pas de d'adresse alors on précise
                                     task.address.toString().isEmpty

@@ -4,7 +4,6 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/home.dart';
-
 import '../database/task_db.dart';
 
 class CreateTask extends StatefulWidget {

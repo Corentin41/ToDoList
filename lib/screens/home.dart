@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/widgets/displayTask.dart';
-import 'package:todolist/widgets/updateTask.dart';
-
 import '../database/task_db.dart';
 import '../model/task.dart';
 import '../widgets/createTask.dart';
@@ -132,6 +129,8 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 taskDB.delete(task.id);
                                 loadTasks();
+                                // Afficher un message indiquant que la tâche a été supprimée
+                                notifDelete();
                               });
                             },
                             child: Container(
@@ -242,6 +241,8 @@ class _HomePageState extends State<HomePage> {
                                                 taskDB.delete(task.id);
                                                 // Rafraîchir l'affichage des tâches
                                                 loadTasks();
+                                                // Afficher un message indiquant que la tâche a été supprimée
+                                                notifDelete();
                                                 Navigator.pop(context);
                                               });
                                             }
@@ -276,7 +277,6 @@ class _HomePageState extends State<HomePage> {
         )
     );
   }
-
 
 
 
@@ -350,10 +350,12 @@ class _HomePageState extends State<HomePage> {
 
 
 
-  // Pour afficher la map
-  TileLayer get openStreetMapTilelayer => TileLayer(
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-  );
-
+  // Fonction pour informer que la tâche a bien été supprimée
+  notifDelete() {
+    // Afficher un message indiquant que la tâche a été supprimée
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        content: const Text('Tâche supprimée avec succès')),
+    );
+  }
 }

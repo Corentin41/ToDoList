@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                             },
                             
                             // Si la tâche est terminée et que le choix est de ne pas les afficher alors ne rien retourner
-                            child: (!_displayPref && task.isDone == 1) ? null : Container(
+                            child: (!_displayPref && task.isDone == 1) ? Container() : Container(
                               margin: const EdgeInsets.all(5),
 
                               // Couleur de fond des tâches
@@ -387,9 +387,12 @@ class _HomePageState extends State<HomePage> {
   // Fonction pour informer que la tâche a bien été supprimée
   notifDelete() {
     // Afficher un message indiquant que la tâche a été supprimée
-    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        content: const Text('Tâche supprimée avec succès')),
+        content: const Text('Tâche supprimée avec succès'),
+        duration: const Duration(seconds: 3),
+      ),
     );
   }
 }

@@ -38,17 +38,33 @@ class TaskDB {
   // Fonction pour récupérer les données de notre BDD (par date de création)
   Future<List<Task>> fetchAll(String sortPref) async {
     final database = await DatabaseService().database;
-    final tasks = await database.rawQuery(
-        '''SELECT * FROM $tableName ORDER BY isDone, $sortPref, created_at'''
-    );
-    return tasks.map((task) => Task.fromSqfliteDatabase(task)).toList();
-  }
+    // String qui va contenir la requête SQL
+    String query;
 
-  // Fonction pour récupérer une tâche à partir de son id
-  Future<Task> fetchById(int id) async {
-    final database = await DatabaseService().database;
-    final task = await database.rawQuery('''SELECT * FROM $tableName WHERE id = ?''', [id]);
-    return Task.fromSqfliteDatabase(task.first);
+
+    switch (sortPref) {
+
+      // Récupérer par date d'échéance puis par date de création
+      case 'date':
+        query = '''SELECT * FROM $tableName ORDER BY isDone ASC, CASE WHEN date = '' THEN '9999' END, date ASC, created_at''';
+
+      // Récupérer par date de création
+      case 'created_at':
+        query = '''SELECT * FROM $tableName ORDER BY isDone ASC, created_at''';
+
+      // Récupérer par ordre de priorité puis par date de création
+      case 'priority':
+        query = '''SELECT * FROM $tableName ORDER BY isDone ASC, priority, created_at''';
+
+      // Par défaut récupérer par ordre de priorité puis par date de création
+      default:
+        query = '''SELECT * FROM $tableName ORDER BY isDone ASC, priority, created_at''';
+    }
+
+    // Exécuter la requête SQL sur la BDD puis récupérer le résultat pour le transformer en liste de tâches
+    final tasks = await database.rawQuery(query);
+    return tasks.map((task) => Task.fromSqfliteDatabase(task)).toList();
+
   }
 
   // Fonction pour modifier une donnée dans la BDD à partir d'un id

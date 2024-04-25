@@ -88,61 +88,67 @@ class DisplayTask extends StatelessWidget {
 
 
               // En-tête du BottomSheet
-              Column(
-                children: [
-                  // Affichage d'une petite barre
-                  Padding(
-                    padding: const EdgeInsets.only(left: 150, top: 20, right: 150, bottom: 20),
-                    child: Container(
-                      height: 8,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+              SizedBox(
+                child: Container(
+                  padding: const EdgeInsets.only(left: 20, right: 20),
+                  child: Column(
+                    children: [
+
+                      // Affichage d'une petite barre
+                      Padding(
+                        padding: const EdgeInsets.only(left: 150, top: 20, right: 150, bottom: 20),
+                        child: Container(
+                          height: 8,
+                          width: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
 
 
-                  // Titre de l'en-tête + Bouton Modifier
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      // Espace pour centrer le titre
-                      const SizedBox(width: 32),
-                      // Titre de l'en-tête
-                      const Text(
-                        'Description de la tâche',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold),
+                      // Titre de l'en-tête + Bouton Modifier
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          // Espace pour centrer le titre
+                          const SizedBox(width: 32),
+                          // Titre de l'en-tête
+                          const Text(
+                            'Description de la tâche',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          // Bouton pour modifier la tâche
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 32),
+                            onPressed: () {
+                              // Aller sur la page pour modifier la tâche
+                              Navigator.pop(context);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
+                            },
+                          )
+                        ],
                       ),
-                      // Bouton pour modifier la tâche
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 32),
-                        onPressed: () {
-                          // Aller sur la page pour modifier la tâche
-                          Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => UpdateTask(task: task)));
-                        },
-                      )
+
+
+                      // Affichage d'une petite barre pour séparer l'en-tête du contenu
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Container(
+                          height: 1,
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-
-
-                  // Affichage d'une petite barre pour séparer l'en-tête du contenu
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Container(
-                      height: 1,
-                      width: double.maxFinite,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
 
 

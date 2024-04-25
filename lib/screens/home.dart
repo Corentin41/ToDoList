@@ -161,13 +161,13 @@ class _HomePageState extends State<HomePage> {
                                     ? task.isDone == 0
                                 // Tâche prioritaire en cours => orange
                                     ? Colors.orange.shade300
-                                // Tâche prioritaire terminée => grey
-                                    : Colors.grey
+                                // Tâche prioritaire terminée => gris foncé
+                                    : Theme.of(context).colorScheme.tertiary
                                     : task.isDone == 0
                                 // Tâche en cours => lime
                                     ? Theme.of(context).colorScheme.secondary
-                                // Tâche terminée => grey
-                                    : Theme.of(context).colorScheme.tertiary,
+                                // Tâche terminée => gris clair
+                                    : Colors.grey,
                                 // Si la tâche est terminée alors elle est grisée
 
                                 child: ListTile(
@@ -298,8 +298,13 @@ class _HomePageState extends State<HomePage> {
   }
 
 
-  // Fonction pour créer l'AppBar
+
+
+  // Fonction pour créer l'AppBar et afficher les settings de l'application
   AppBar _buildAppBar() {
+    // Récupérer la taille de l'écran
+    Size size = MediaQuery.of(context).size;
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
       title: const Text('Mes tâches'),
@@ -309,22 +314,73 @@ class _HomePageState extends State<HomePage> {
         Builder(builder: (context){
           return IconButton(
               onPressed: () {
+                // Afficher les settings dans un BottomSheet
                 showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
+                  context: context,
+                  builder: (BuildContext context) {
+
+                    // Retourner un context propre au BottomSheet
+                    return StatefulBuilder(
+                      builder: (BuildContext context, StateSetter setState) {
                         return SizedBox(
-                            height: 400,
-                            width: double.maxFinite,
+                            // Hauteur du BottomSheet des settings (moitié de la page)
+                            height: size.height * 0.5,
                             child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.background,
+                                borderRadius: const BorderRadius.only(topRight: Radius.circular(20.0), topLeft: Radius.circular(20.0)),
+                              ),
                               padding: const EdgeInsets.all(20),
+
+                              // Afficher les settings les uns en dessous des autres
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
+
+                                  // En-tête du BottomSheet
+                                  Column(
+                                    children: [
+                                      // Affichage d'une petite barre
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 150, right: 150, bottom: 10),
+                                        child: Container(
+                                          height: 8,
+                                          width: 80,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade300,
+                                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                          ),
+                                        ),
+                                      ),
+
+                                      // Affichage d'un titre
+                                      const Text(
+                                        'Paramètres',
+                                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                      ),
+
+                                      // Affichage d'une petite barre pour séparer l'en-tête du contenu
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 20),
+                                        child: Container(
+                                          height: 1,
+                                          width: double.maxFinite,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade300,
+                                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const Text('Quel ordre pour l\'affichage des tâches ?'),
+
+
+                                  // DropDown pour sélectionner le tri de la liste
                                   DropdownMenu<String>(
                                     // Afficher le nom du tri par défaut
-                                    hintText: _sortPref,
+                                    label: Text(_sortPref.toString()),
                                     onSelected: (String? value) {
                                       setState(() {
                                         // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
@@ -338,6 +394,7 @@ class _HomePageState extends State<HomePage> {
                                     }).toList(),
                                   ),
 
+
                                   const Text('Afficher les tâches terminées ?'),
                                   Switch(
                                     // This bool value toggles the switch.
@@ -350,22 +407,16 @@ class _HomePageState extends State<HomePage> {
                                       });
                                     },
                                   ),
-                                  ElevatedButton(
-                                    child: const Text('Close'),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                  )
                                 ],
                               ),
                             )
                         );
-                      });
-
-                    },
+                      },
+                    );
+                  },
                 );
-          },
-          icon: const Icon(Icons.settings)
+              },
+              icon: const Icon(Icons.settings)
           );
         })
       ],

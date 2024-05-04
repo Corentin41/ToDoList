@@ -5,6 +5,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 import '../database/task_db.dart';
@@ -71,7 +72,7 @@ class _UpdateTaskState extends State<UpdateTask> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modifier la tâche'),
+        title: Text(AppLocalizations.of(context)!.editTask),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
@@ -92,13 +93,13 @@ class _UpdateTaskState extends State<UpdateTask> {
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Nom"
+                            hintText: AppLocalizations.of(context)?.name
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir un nom';
+                            return AppLocalizations.of(context)?.addName;
                           }
                           else {
                             return null;
@@ -122,9 +123,9 @@ class _UpdateTaskState extends State<UpdateTask> {
                         maxLines: null,
                         minLines: 5,
                         //controller: _descController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Description"
+                            hintText: AppLocalizations.of(context)?.desc
                         ),
                         // Afficher la description précédemment entrée par l'utilisateur
                         initialValue: widget.task.description,
@@ -145,7 +146,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                         // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
                         decoration: checkDate(widget.task) == true
                             ? InputDecoration(border: const OutlineInputBorder(), hintText: widget.task.date.toString())
-                            : const InputDecoration(border: OutlineInputBorder(), labelText: 'Date d\'échéance'),
+                            : InputDecoration(border: OutlineInputBorder(), labelText: AppLocalizations.of(context)?.dueDate),
                         // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
                         readOnly: true,
                         onTap: () async {
@@ -172,9 +173,9 @@ class _UpdateTaskState extends State<UpdateTask> {
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         controller: _addressController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Adresse"
+                            hintText: AppLocalizations.of(context)?.address
                         ),
                       ),
                     ),
@@ -187,8 +188,8 @@ class _UpdateTaskState extends State<UpdateTask> {
                           left: 20, right: 20, bottom: 20),
                       child: Row(
                         children: [
-                          const Text(
-                              "Changer le niveau de priorité : ",
+                          Text(
+                              AppLocalizations.of(context)!.changePriority,
                               style: TextStyle(fontWeight: FontWeight.bold)
                           ),
                           IconButton(
@@ -244,9 +245,9 @@ class _UpdateTaskState extends State<UpdateTask> {
                                         return QuickAlert.show(
                                             context: context,
                                             type: QuickAlertType.warning,
-                                            title: 'Attention',
-                                            text: 'Vous avez saisi une adresse incorrecte ou inexistante',
-                                            confirmBtnText: 'OK'
+                                            title: AppLocalizations.of(context)?.warning,
+                                            text: AppLocalizations.of(context)?.wrongAddress,
+                                            confirmBtnText: AppLocalizations.of(context)!.ok
                                         );
                                       }
                                     }
@@ -268,7 +269,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
-                              child: const Text('modifier',
+                              child: Text(AppLocalizations.of(context)!.edit,
                                 style: TextStyle(color: Colors.white),)),
                         ),
 
@@ -284,7 +285,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                               // Retourner sur la page d'affichage des tâches
                               Navigator.pop(context);
                             },
-                            child: const Text('annuler',
+                            child: Text(AppLocalizations.of(context)!.cancel,
                               style: TextStyle(color: Colors.white),),
                           ),
                         )

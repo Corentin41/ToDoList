@@ -1,0 +1,69 @@
+{
+  "name" : "Nombre",
+
+  "addTask" : "Agregar una tarea",
+
+  "addName" : "Por favor, agregar un nombre",
+
+  "desc" : "Descripción",
+
+  "dueDate" : "Fecha de vencimiento",
+
+  "address" : "Dirección",
+
+  "setPriority" : "Establecer como una tarea prioritaria : ",
+
+  "warning" : "Cuidado",
+
+  "wrongAddress" : "Ingresaste una dirección incorrecta o inexistente",
+
+  "ok" : "OK",
+
+  "add" : "Agregar",
+
+  "cancel" : "Cancelar",
+
+  "weatherException" : "No se pudieron recuperar los datos",
+
+  "taskDesc" : "Descripción de la tarea",
+
+  "noDesc" : "No descripción para esta tarea",
+
+  "noDate" : "No fecha para esta tarea",
+
+  "noAddress" : "No dirección para esta tarea",
+
+  "now" : "Actualmente",
+
+  "minMax" : "min / max",
+
+  "editTask" : "Modificar la tarea",
+
+  "changePriority" : "Cambiar nivel de prioridad : ",
+
+  "edit" : "Modificar",
+
+  "priority" : "Prioridad",
+
+  "creationDate" : "Fecha de creación",
+
+  "noTask" : "Ninguno tarea",
+
+  "deleteTask" : "Eliminando la tarea",
+
+  "confirmDeleteTask" : "¿Confirmar la supresión de la tarea?",
+
+  "delete" : "Eliminar",
+
+  "myTasks" : "Mis tareas",
+
+  "settings" : "Parámetros",
+
+  "whichDisplayOrder" : "¿Qué orden deben mostrar las tareas?",
+
+  "displayCompletedTasks" : "¿Mostrar tareas completadas?",
+
+  "taskDeleted" : "Tarea eliminada exitosamente",
+
+  "language" : "Idioma"
+}

@@ -5,6 +5,7 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/home.dart';
 import '../database/task_db.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreateTask extends StatefulWidget {
 
@@ -53,7 +54,7 @@ class _CreateTaskState extends State<CreateTask> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajouter une tâche'),
+        title: Text(AppLocalizations.of(context)!.addTask),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
@@ -74,13 +75,13 @@ class _CreateTaskState extends State<CreateTask> {
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Nom"
+                            hintText: AppLocalizations.of(context)?.name
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Veuillez saisir un nom';
+                            return AppLocalizations.of(context)?.addName;
                           }
                           else {
                             return null;
@@ -102,9 +103,9 @@ class _CreateTaskState extends State<CreateTask> {
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         minLines: 5,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Description"
+                            hintText: AppLocalizations.of(context)?.desc
                         ),
                         // Sauvegarder la description de la tâche
                         onSaved: (descValue) {
@@ -120,9 +121,9 @@ class _CreateTaskState extends State<CreateTask> {
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         controller: _dateController,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Date d\'échéance"
+                        decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            hintText: AppLocalizations.of(context)?.dueDate
                         ),
                         readOnly: true,
                         // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
@@ -154,9 +155,9 @@ class _CreateTaskState extends State<CreateTask> {
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         controller: _addressController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            hintText: "Adresse"
+                            hintText: AppLocalizations.of(context)?.address
                         ),
                       ),
                     ),
@@ -165,12 +166,12 @@ class _CreateTaskState extends State<CreateTask> {
 
                     // Définir le niveau de priorité de la tâche
                     Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                      padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: Row(
                         children: [
-                          const Text(
-                              "Définir en tant que tâche prioritaire : ",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                              AppLocalizations.of(context)!.setPriority,
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
 
                           IconButton(
                             // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
@@ -219,9 +220,9 @@ class _CreateTaskState extends State<CreateTask> {
                                     return QuickAlert.show(
                                       context: context,
                                       type: QuickAlertType.warning,
-                                      title: 'Attention',
-                                      text: 'Vous avez saisi une adresse incorrecte ou inexistante',
-                                      confirmBtnText: 'OK'
+                                      title: AppLocalizations.of(context)?.warning,
+                                      text: AppLocalizations.of(context)?.wrongAddress,
+                                      confirmBtnText: AppLocalizations.of(context)!.ok
                                     );
                                   }
 
@@ -240,7 +241,7 @@ class _CreateTaskState extends State<CreateTask> {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
-                              child: const Text('ajouter', style: TextStyle(color: Colors.white),)),
+                              child: Text(AppLocalizations.of(context)!.add, style: TextStyle(color: Colors.white),)),
                         ),
 
                         // Bouton pour annuler la création de tâche
@@ -251,7 +252,7 @@ class _CreateTaskState extends State<CreateTask> {
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: const Text('annuler', style: TextStyle(color: Colors.white),),
+                            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: Colors.white),),
                           ),
                         )
                       ],

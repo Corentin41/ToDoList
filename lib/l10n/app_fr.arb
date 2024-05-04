@@ -1,0 +1,70 @@
+{
+    "name" : "Nom",
+
+    "addTask" : "Ajouter une tâche",
+
+    "addName" : "Veuillez saisir un nom",
+
+    "desc" : "Description",
+
+    "dueDate" : "Date d'échéance",
+
+    "address" : "Adresse",
+
+    "setPriority" : "Définir en tant que tâche prioritaire : ",
+
+    "warning" : "Attention",
+
+    "wrongAddress" : "Vous avez saisi une adresse incorrecte ou inexistante",
+
+    "ok" : "OK",
+
+    "add" : "Ajouter",
+
+    "cancel" : "Annuler",
+
+    "weatherException" : "Echec lors de la récupération des données",
+
+    "taskDesc" : "Description de la tâche",
+
+    "noDesc" : "Aucune description pour cette tâche",
+
+    "noDate" : "Aucune date pour cette tâche",
+
+    "noAddress" : "Aucune adresse pour cette tâche",
+
+    "now" : "Actuellement",
+
+    "minMax" : "min / max",
+
+    "editTask" : "Modifier la tâche",
+
+    "changePriority" : "Changer le niveau de priorité : ",
+
+    "edit" : "Modifier",
+
+    "priority" : "Priorité",
+
+    "creationDate" : "Date de création",
+
+    "noTask" : "Aucune tâche",
+
+    "deleteTask" : "Suppression de la tâche",
+
+    "confirmDeleteTask" : "Confirmer la suppression de la tâche ?",
+
+    "delete" : "Supprimer",
+
+    "myTasks" : "Mes tâches",
+
+    "settings" : "Paramètres",
+
+    "whichDisplayOrder" : "Quel ordre pour l'affichage des tâches ?",
+
+    "displayCompletedTasks" : "Afficher les tâches terminées ?",
+
+    "taskDeleted" : "Tâche supprimée avec succès",
+
+    "language" : "Langue"
+
+}

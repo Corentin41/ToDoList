@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:todolist/main.dart';
 import 'package:todolist/widgets/displayTask.dart';
 import '../database/task_db.dart';
 import '../model/task.dart';
 import '../widgets/createTask.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,7 +24,11 @@ class _HomePageState extends State<HomePage> {
   final taskDB = TaskDB();
 
   // Liste qui contient les titres pour trier la liste des tâches
-  List<String> myPrefs = ['Priorité','Date de création','Date d\'échéance'];
+  List<String> mySortPrefs = ['Priorité','Date de création','Date d\'échéance'];
+
+  List<String> languages = ['Français','English','Español'];
+
+  String _currentLanguage = '';
   
   // Initialiser les SharedPrefs
   String _sortPref = ''; // Pour le tri de la liste
@@ -32,16 +39,19 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    final String defaultLocale = Platform.localeName;
     // Récupérer le tri de la liste (SharedPrefs)
     _getSortPref().then((result) {
-      setState(() {
-        // Si pas de prefs alors par défaut mettre à niveau de Priorité
-        if (_sortPref.isEmpty) {
-          _sortPref = 'Priorité';
-        }
-        // Récupérer toutes les tâches stockées en BDD lors de l'arrivée sur la page
-        loadTasks();
-      });
+        _getLanguagePref().then((value) {
+          setState(() {
+            if (_sortPref.isEmpty) {
+              _sortPref = AppLocalizations.of(context)!.priority;
+            }
+
+            loadTasks();
+            translateSortPrefs();
+          });
+        });
     });
   }
 
@@ -57,13 +67,13 @@ class _HomePageState extends State<HomePage> {
 
     setState(()  {
       // Adapter le nom du _sortPref pour pouvoir le passer dans la requête SQL
-      if (_sortPref == 'Priorité') {
+      if (_sortPref == AppLocalizations.of(context)!.priority) {
         _orderBy = 'priority';
       }
-      else if (_sortPref == 'Date d\'échéance') {
+      else if (_sortPref == AppLocalizations.of(context)!.creationDate) {
         _orderBy = 'date';
       }
-      else if (_sortPref == 'Date de création') {
+      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
         _orderBy = 'created_at';
       }
       // Afficher la liste triée en fonction du _sortPref
@@ -75,7 +85,7 @@ class _HomePageState extends State<HomePage> {
   // Récupérer depuis les SharedPreferences le choix du tri de la liste
   Future<String> _getSortPref() async {
     final prefs = await SharedPreferences.getInstance();
-    _sortPref = prefs.getString('sortPref') ?? "Priorité";
+    _sortPref = prefs.getString('sortPref') ?? AppLocalizations.of(context)!.priority;
     return _sortPref;
   }
 
@@ -83,6 +93,27 @@ class _HomePageState extends State<HomePage> {
   Future<void> _saveSortPref(String value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('sortPref', value);
+  }
+
+  // Récupérer depuis les SharedPreferences le choix du tri de la liste
+  Future<String> _getLanguagePref() async {
+    final prefs = await SharedPreferences.getInstance();
+    _currentLanguage = prefs.getString('languagePref') ?? "fr";
+    switch(_currentLanguage){
+      case "en" :
+        _currentLanguage = languages[1];
+      case "es" :
+        _currentLanguage = languages[2];
+      default : // fr
+        _currentLanguage = languages[0];
+    }
+    return _currentLanguage;
+  }
+
+  // Stocker dans les SharedPreferences le choix du tri de la liste
+  Future<void> _saveLanguagePref(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('languagePref', value);
   }
 
   // Récupérer depuis les SharedPreferences le choix d'affichage des tâches terminées
@@ -120,7 +151,7 @@ class _HomePageState extends State<HomePage> {
                   else {
                     // S'il n'y a aucune tâche enregistrée en BDD alors afficher un message
                     if (snapshot.data == null || snapshot.data!.isEmpty) {
-                      return const Center(child: Text('Aucune tâche', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
+                      return Center(child: Text(AppLocalizations.of(context)!.noTask, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
                     }
                     // Sinon récupérer les tâchs pour les afficher sous forme de liste
                     else {
@@ -249,11 +280,11 @@ class _HomePageState extends State<HomePage> {
                                         QuickAlert.show(
                                             context: context,
                                             type: QuickAlertType.confirm,
-                                            title: 'Suppression de la tâche',
-                                            text: 'Confirmer la suppression de la tâche ?',
-                                            confirmBtnText: 'Supprimer',
+                                            title: AppLocalizations.of(context)?.deleteTask,
+                                            text: AppLocalizations.of(context)?.confirmDeleteTask,
+                                            confirmBtnText: AppLocalizations.of(context)!.delete,
                                             confirmBtnColor: Colors.red,
-                                            cancelBtnText: 'Annuler',
+                                            cancelBtnText: AppLocalizations.of(context)!.cancel,
                                             onConfirmBtnTap: () {
                                               setState(() {
                                                 // Appel à la méthode delete de la BDD pour supprimer la tâche
@@ -305,9 +336,11 @@ class _HomePageState extends State<HomePage> {
     // Récupérer la taille de l'écran
     Size size = MediaQuery.of(context).size;
 
+    translateSortPrefs();
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      title: const Text('Mes tâches'),
+      title: Text(AppLocalizations.of(context)!.myTasks),
       // Désactiver la possibilité de retour lors de l'affichage des tâches
       automaticallyImplyLeading: false,
       actions: [
@@ -355,8 +388,8 @@ class _HomePageState extends State<HomePage> {
                                       ),
 
                                       // Affichage d'un titre
-                                      const Text(
-                                        'Paramètres',
+                                      Text(
+                                        AppLocalizations.of(context)!.settings,
                                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                       ),
 
@@ -374,7 +407,7 @@ class _HomePageState extends State<HomePage> {
                                       ),
                                     ],
                                   ),
-                                  const Text('Quel ordre pour l\'affichage des tâches ?'),
+                                  Text(AppLocalizations.of(context)!.whichDisplayOrder),
 
 
                                   // DropDown pour sélectionner le tri de la liste
@@ -389,13 +422,13 @@ class _HomePageState extends State<HomePage> {
                                       });
                                     },
                                     // Contient les différents choix pour trier la liste
-                                    dropdownMenuEntries: myPrefs.map<DropdownMenuEntry<String>>((String value) {
+                                    dropdownMenuEntries: mySortPrefs.map<DropdownMenuEntry<String>>((String value) {
                                       return DropdownMenuEntry<String>(value: value, label: value);
                                     }).toList(),
                                   ),
 
 
-                                  const Text('Afficher les tâches terminées ?'),
+                                  Text(AppLocalizations.of(context)!.displayCompletedTasks),
                                   Switch(
                                     // This bool value toggles the switch.
                                     value: _displayPref,
@@ -406,6 +439,39 @@ class _HomePageState extends State<HomePage> {
                                         loadTasks();
                                       });
                                     },
+                                  ),
+
+                                  Text(AppLocalizations.of(context)!.language),
+                                  DropdownMenu<String>(
+                                    // Afficher le nom du tri par défaut
+                                    label: Text(_currentLanguage),
+                                    onSelected: (String? value) {
+                                      setState(() {
+                                        // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
+
+                                        switch(value.toString()){
+                                          case "Français":
+                                            MainApp.setLocale(context, Locale('fr'));
+                                            _saveLanguagePref("fr");
+                                          case "English":
+                                            MainApp.setLocale(context, Locale('en'));
+                                            _saveLanguagePref("en");
+                                          case "Español":
+                                            MainApp.setLocale(context, Locale('es'));
+                                            _saveLanguagePref("es");
+                                        }
+                                        _currentLanguage = value.toString();
+                                        _getSortPref().then((result) {
+                                            setState(() {
+                                              _sortPref = result;
+                                            });
+                                        });
+                                      });
+                                    },
+                                    // Contient les différents choix pour trier la liste
+                                    dropdownMenuEntries: languages.map<DropdownMenuEntry<String>>((String value) {
+                                      return DropdownMenuEntry<String>(value: value, label: value);
+                                    }).toList(),
                                   ),
                                 ],
                               ),
@@ -441,9 +507,15 @@ class _HomePageState extends State<HomePage> {
     return ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        content: const Text('Tâche supprimée avec succès'),
+        content: Text(AppLocalizations.of(context)!.taskDeleted),
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  void translateSortPrefs() {
+    mySortPrefs[0] = AppLocalizations.of(context)!.priority;
+    mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
+    mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
   }
 }

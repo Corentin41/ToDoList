@@ -1,0 +1,70 @@
+{
+    "name" : "Name",
+
+    "addTask" : "Add a task",
+
+    "addName" : "Please, add a name",
+
+    "desc" : "Description",
+
+    "dueDate" : "Due date",
+
+    "address" : "Address",
+
+    "setPriority" : "Set as priority task : ",
+
+    "warning" : "Warning",
+
+    "wrongAddress" : "You entered an incorrect or non-existent address",
+
+    "ok" : "OK",
+
+    "add" : "Add",
+
+    "cancel" : "Cancel",
+
+    "weatherException" : "Failed to retrieve data",
+
+    "taskDesc" : "Description of the task",
+
+    "noDesc" : "No description for this task",
+
+    "noDate" : "No date for this task",
+
+    "noAddress" : "No address for this task",
+
+    "now" : "Currently",
+
+    "minMax" : "min / max",
+
+    "editTask" : "Edit task",
+
+    "changePriority" : "Change priority level : ",
+
+    "edit" : "Edit",
+
+    "priority" : "Priority",
+
+    "creationDate" : "Creation date",
+
+    "noTask" : "No task",
+
+    "deleteTask" : "Delete task",
+
+    "confirmDeleteTask" : "Confirm task deletion ?",
+
+    "delete" : "Delete",
+
+    "myTasks" : "My tasks",
+
+    "settings" : "Settings",
+
+    "whichDisplayOrder" : "What order should tasks be displayed?",
+
+    "displayCompletedTasks" : "Show completed tasks ?",
+
+    "taskDeleted" : "Task deleted successfully",
+
+    "language" : "Language"
+
+}

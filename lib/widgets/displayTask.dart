@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/widgets/updateTask.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 class DisplayTask extends StatelessWidget {
@@ -61,7 +62,7 @@ class DisplayTask extends StatelessWidget {
         // Récupérer le type d'icone
         _icon = '${meteoData['weather'][0]['icon']}';
       } else {
-        throw Exception('Echec lors de la récupération des données');
+        throw Exception(AppLocalizations.of(context)?.weatherException);
       }
     }
 
@@ -115,9 +116,9 @@ class DisplayTask extends StatelessWidget {
                           // Espace pour centrer le titre
                           const SizedBox(width: 32),
                           // Titre de l'en-tête
-                          const Text(
-                            'Description de la tâche',
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.taskDesc,
+                            style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -195,7 +196,7 @@ class DisplayTask extends StatelessWidget {
                                   child: SizedBox(
                                     // S'il n'y a pas de description alors on précise
                                     child: task.description.isEmpty
-                                        ? const Text('Aucune description pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                        ? Text(AppLocalizations.of(context)!.noDesc, style: const TextStyle(fontStyle: FontStyle.italic))
                                         : Text(task.description),
                                   ),
                                 ),
@@ -223,7 +224,7 @@ class DisplayTask extends StatelessWidget {
                                 ),
                                 // S'il n'y a pas de description alors on précise
                                 task.date.toString().isEmpty
-                                    ? const Text('Aucune date pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                    ? Text(AppLocalizations.of(context)!.noDate, style: TextStyle(fontStyle: FontStyle.italic))
                                     : Text(task.date.toString())
                               ],
                             ),
@@ -252,7 +253,7 @@ class DisplayTask extends StatelessWidget {
                                     ),
                                     // S'il n'y a pas de d'adresse alors on précise
                                     task.address.toString().isEmpty
-                                        ? const Text('Aucune adresse pour cette tâche', style: TextStyle(fontStyle: FontStyle.italic))
+                                        ? Text(AppLocalizations.of(context)!.noAddress, style: const TextStyle(fontStyle: FontStyle.italic))
                                         : Flexible(child: Text(task.address.toString()))
                                   ],
                                 ),
@@ -314,7 +315,7 @@ class DisplayTask extends StatelessWidget {
                                         Column(
                                           // Temp Actuelle
                                           children: [
-                                            const Text("Actuellement"),
+                                            Text(AppLocalizations.of(context)!.now),
                                             Text(_tempActuelle),
                                           ],
                                         ),
@@ -329,7 +330,7 @@ class DisplayTask extends StatelessWidget {
                                         // Temp Min Max
                                         Column(
                                           children: [
-                                            const Text("min / max"),
+                                            Text(AppLocalizations.of(context)!.minMax),
                                             Text("$_tempMin / $_tempMax"),
                                           ],
                                         )

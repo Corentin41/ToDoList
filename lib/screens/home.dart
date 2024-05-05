@@ -522,8 +522,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     mySortPrefs[0] = AppLocalizations.of(context)!.priority;
-    mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
-    mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
+    mySortPrefs[1] = AppLocalizations.of(context)!.dueDate;
+    mySortPrefs[2] = AppLocalizations.of(context)!.creationDate;
 
     _sortPref = mySortPrefs[sort];
     _saveSortPref(mySortPrefs[sort]);

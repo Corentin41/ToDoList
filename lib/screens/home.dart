@@ -461,11 +461,7 @@ class _HomePageState extends State<HomePage> {
                                             _saveLanguagePref("es");
                                         }
                                         _currentLanguage = value.toString();
-                                        _getSortPref().then((result) {
-                                            setState(() {
-                                              _sortPref = result;
-                                            });
-                                        });
+                                        translateSortPrefs();
                                       });
                                     },
                                     // Contient les différents choix pour trier la liste
@@ -514,8 +510,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   void translateSortPrefs() {
+    int sort;
+    if (_sortPref == AppLocalizations.of(context)!.priority) {
+      sort = 0;
+    }
+    if (_sortPref == AppLocalizations.of(context)!.creationDate) {
+      sort = 1;
+    }
+    else{
+      sort = 2;
+    }
+
     mySortPrefs[0] = AppLocalizations.of(context)!.priority;
     mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
     mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
+
+    _sortPref = mySortPrefs[sort];
+    _saveSortPref(mySortPrefs[sort]);
   }
 }

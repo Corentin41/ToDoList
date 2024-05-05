@@ -70,10 +70,10 @@ class _HomePageState extends State<HomePage> {
       if (_sortPref == AppLocalizations.of(context)!.priority) {
         _orderBy = 'priority';
       }
-      else if (_sortPref == AppLocalizations.of(context)!.creationDate) {
+      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
         _orderBy = 'date';
       }
-      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
+      else if (_sortPref == AppLocalizations.of(context)!.creationDate) {
         _orderBy = 'created_at';
       }
       // Afficher la liste triée en fonction du _sortPref

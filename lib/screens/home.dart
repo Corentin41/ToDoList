@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/main.dart';
+import 'package:todolist/themes/theme_provider.dart';
 import 'package:todolist/widgets/displayTask.dart';
 import '../database/task_db.dart';
 import '../model/task.dart';
@@ -33,24 +35,39 @@ class _HomePageState extends State<HomePage> {
   // Initialiser les SharedPrefs
   String _sortPref = ''; // Pour le tri de la liste
   bool _displayPref = true; // Pour l'affichage des tâches terminées
-  String _orderBy = ''; // Pour la BDD
+  String _themePref = '';
+  String _orderBy = '';// Pour la BDD
 
   
   @override
   void initState() {
     super.initState();
-    final String defaultLocale = Platform.localeName;
     // Récupérer le tri de la liste (SharedPrefs)
-    _getSortPref().then((result) {
-        _getLanguagePref().then((value) {
-          setState(() {
-            if (_sortPref.isEmpty) {
-              _sortPref = AppLocalizations.of(context)!.priority;
-            }
+    _getSortPref().then((sortValue) {
+        _getLanguagePref().then((languageValue) {
+          _getThemePref().then((themeValue) {
+            setState(() {
+              if (_sortPref.isEmpty) {
+                _sortPref = AppLocalizations.of(context)!.priority;
+              }
 
-            loadTasks();
-            int i = mySortPrefs.indexWhere((element) => element == _sortPref);
-            translateSortPrefs(i);
+              if(_themePref.isEmpty){
+                var brightness = MediaQuery.of(context).platformBrightness;
+                bool isDarkMode = brightness == Brightness.dark;
+
+                if(isDarkMode && Provider.of<ThemeProvider>(context,listen: false).light == true){
+                  Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
+                  _saveThemePref('dark');
+                }
+              }else{
+                if(_themePref == 'dark'){
+                  Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
+                }
+              }
+
+              loadTasks();
+              translateSortPrefs();
+            });
           });
         });
     });
@@ -128,6 +145,17 @@ class _HomePageState extends State<HomePage> {
   Future<void> _saveDisplayPref(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('displayPref', value);
+  }
+
+  Future<String> _getThemePref() async{
+    final prefs = await SharedPreferences.getInstance();
+    _themePref = prefs.getString('themePref') ?? 'light';
+    return _themePref;
+  }
+
+  Future<void> _saveThemePref(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('themePref', value);
   }
 
   
@@ -336,9 +364,7 @@ class _HomePageState extends State<HomePage> {
   AppBar _buildAppBar() {
     // Récupérer la taille de l'écran
     Size size = MediaQuery.of(context).size;
-
-    int i = mySortPrefs.indexWhere((element) => element == _sortPref);
-    translateSortPrefs(i);
+    translateSortPrefs();
 
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -443,6 +469,26 @@ class _HomePageState extends State<HomePage> {
                                     },
                                   ),
 
+                                  Text(AppLocalizations.of(context)!.darkMode),
+                                  Switch(
+                                    // This bool value toggles the switch.
+                                    value: !Provider.of<ThemeProvider>(context).light,
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        //_saveModePrefs(value);
+
+                                        _getThemePref().then((themeValue){
+                                          Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
+                                          if(themeValue=='light'){
+                                            _saveThemePref('dark');
+                                          }else{
+                                            _saveThemePref('light');
+                                          }
+                                        });
+                                      });
+                                    },
+                                  ),
+
                                   Text(AppLocalizations.of(context)!.language),
                                   DropdownMenu<String>(
                                     // Afficher le nom du tri par défaut
@@ -456,19 +502,19 @@ class _HomePageState extends State<HomePage> {
                                             MainApp.setLocale(context, Locale('fr'));
                                             _saveLanguagePref("fr").then((result)  {
                                               _currentLanguage = value.toString();
-                                              translateSortPrefs(i);
+                                              translateSortPrefs();
                                             });
                                           case "English":
                                             MainApp.setLocale(context, Locale('en'));
                                             _saveLanguagePref("en").then((result)  {
                                               _currentLanguage = value.toString();
-                                              translateSortPrefs(i);
+                                              translateSortPrefs();
                                             });
                                           case "Español":
                                             MainApp.setLocale(context, Locale('es'));
                                             _saveLanguagePref("es").then((result)  {
                                               _currentLanguage = value.toString();
-                                              translateSortPrefs(i);
+                                              translateSortPrefs();
                                             });
                                         }
                                         Navigator.pop(context);
@@ -519,7 +565,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void translateSortPrefs(int i) {
+  void translateSortPrefs() {
+    int i = getSortIndex();
+
     mySortPrefs[0] = AppLocalizations.of(context)!.priority;
     mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
     mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
@@ -527,5 +575,16 @@ class _HomePageState extends State<HomePage> {
     _saveSortPref(mySortPrefs[i]).then((value) {
         _sortPref = mySortPrefs[i];
     });
+  }
+
+  int getSortIndex(){
+    int i = mySortPrefs.indexWhere((element) => element == _sortPref);
+    if(i==-1){
+      _saveSortPref(mySortPrefs[0]).then((value) {
+        _sortPref = mySortPrefs[0];
+      });
+      return 0;
+    }
+   return i;
   }
 }

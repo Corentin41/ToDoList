@@ -1,13 +1,19 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/screens/home.dart';
-import 'package:todolist/themes/theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:todolist/themes/theme_provider.dart';
+
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(create: (context) => ThemeProvider(),
+    child: const MainApp(),
+    )
+  );
 }
 
 class MainApp extends StatefulWidget {
@@ -20,8 +26,7 @@ class MainApp extends StatefulWidget {
     _MainAppState? state = context.findAncestorStateOfType<_MainAppState>();
     state?.setLocale(newLocale);
   }
-
-  }
+}
 
   class _MainAppState extends State<MainApp> {
 
@@ -34,6 +39,7 @@ class MainApp extends StatefulWidget {
         _locale = locale;
       });
     }
+
 
 
     @override
@@ -65,8 +71,7 @@ class MainApp extends StatefulWidget {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'ToDo App',
-        theme: lightMode,
-        darkTheme: darkMode,
+        theme: Provider.of<ThemeProvider>(context).themeData,
         localizationsDelegates: [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

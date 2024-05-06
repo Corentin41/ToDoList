@@ -65,5 +65,7 @@
 
   "taskDeleted" : "Tarea eliminada exitosamente",
 
-  "language" : "Idioma"
+  "language" : "Idioma",
+
+  "darkMode" : "Modo oscuro"
 }

@@ -49,7 +49,8 @@ class _HomePageState extends State<HomePage> {
             }
 
             loadTasks();
-            translateSortPrefs();
+            int i = mySortPrefs.indexWhere((element) => element == _sortPref);
+            translateSortPrefs(i);
           });
         });
     });
@@ -70,11 +71,11 @@ class _HomePageState extends State<HomePage> {
       if (_sortPref == AppLocalizations.of(context)!.priority) {
         _orderBy = 'priority';
       }
-      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
-        _orderBy = 'date';
-      }
       else if (_sortPref == AppLocalizations.of(context)!.creationDate) {
         _orderBy = 'created_at';
+      }
+      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
+        _orderBy = 'date';
       }
       // Afficher la liste triée en fonction du _sortPref
       futureTasks = taskDB.fetchAll(_orderBy);
@@ -336,7 +337,8 @@ class _HomePageState extends State<HomePage> {
     // Récupérer la taille de l'écran
     Size size = MediaQuery.of(context).size;
 
-    translateSortPrefs();
+    int i = mySortPrefs.indexWhere((element) => element == _sortPref);
+    translateSortPrefs(i);
 
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -452,16 +454,24 @@ class _HomePageState extends State<HomePage> {
                                         switch(value.toString()){
                                           case "Français":
                                             MainApp.setLocale(context, Locale('fr'));
-                                            _saveLanguagePref("fr");
+                                            _saveLanguagePref("fr").then((result)  {
+                                              _currentLanguage = value.toString();
+                                              translateSortPrefs(i);
+                                            });
                                           case "English":
                                             MainApp.setLocale(context, Locale('en'));
-                                            _saveLanguagePref("en");
+                                            _saveLanguagePref("en").then((result)  {
+                                              _currentLanguage = value.toString();
+                                              translateSortPrefs(i);
+                                            });
                                           case "Español":
                                             MainApp.setLocale(context, Locale('es'));
-                                            _saveLanguagePref("es");
+                                            _saveLanguagePref("es").then((result)  {
+                                              _currentLanguage = value.toString();
+                                              translateSortPrefs(i);
+                                            });
                                         }
-                                        _currentLanguage = value.toString();
-                                        translateSortPrefs();
+                                        Navigator.pop(context);
                                       });
                                     },
                                     // Contient les différents choix pour trier la liste
@@ -509,23 +519,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void translateSortPrefs() {
-    int sort;
-    if (_sortPref == AppLocalizations.of(context)!.priority) {
-      sort = 0;
-    }
-    if (_sortPref == AppLocalizations.of(context)!.creationDate) {
-      sort = 1;
-    }
-    else{
-      sort = 2;
-    }
-
+  void translateSortPrefs(int i) {
     mySortPrefs[0] = AppLocalizations.of(context)!.priority;
-    mySortPrefs[1] = AppLocalizations.of(context)!.dueDate;
-    mySortPrefs[2] = AppLocalizations.of(context)!.creationDate;
+    mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
+    mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
 
-    _sortPref = mySortPrefs[sort];
-    _saveSortPref(mySortPrefs[sort]);
+    _saveSortPref(mySortPrefs[i]).then((value) {
+        _sortPref = mySortPrefs[i];
+    });
   }
 }

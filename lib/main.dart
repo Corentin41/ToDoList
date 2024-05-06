@@ -40,7 +40,6 @@ class MainApp extends StatefulWidget {
   void initState() {
       getLanguagePref().then((value) {
         setState(() {
-          print("*****************" + value);
           // Changer la langue de l'application en fonction de value
           switch(value){
             case "fr" :
@@ -58,7 +57,6 @@ class MainApp extends StatefulWidget {
     Future<String> getLanguagePref() async {
       final prefs = await SharedPreferences.getInstance();
       languagePref = prefs.getString('languagePref') ?? Platform.localeName;
-      print("----------------------------------------"+ languagePref);
       return languagePref;
     }
 

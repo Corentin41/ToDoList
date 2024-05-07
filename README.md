@@ -1,2 +1,7 @@
 # ToDoList
-test commit & push baptiste
+
+## API utilisées
+
+## Spécificités du projet
+
+## Aucune limitation

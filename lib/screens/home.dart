@@ -369,162 +369,214 @@ class _HomePageState extends State<HomePage> {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
       title: Text(AppLocalizations.of(context)!.myTasks),
-      // Désactiver la possibilité de retour lors de l'affichage des tâches
-      automaticallyImplyLeading: false,
       actions: [
         Builder(builder: (context){
           return IconButton(
               onPressed: () {
                 // Afficher les settings dans un BottomSheet
                 showModalBottomSheet(
+                  backgroundColor: Theme.of(context).colorScheme.background,
+                  isScrollControlled: true,
+                  constraints: const BoxConstraints(maxWidth: double.maxFinite),
                   context: context,
                   builder: (BuildContext context) {
-
                     // Retourner un context propre au BottomSheet
                     return StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
-                        return SizedBox(
+
+                        // Détails du BottomSheet
+                        return Container(
                             // Hauteur du BottomSheet des settings (moitié de la page)
                             height: size.height * 0.5,
                             child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.background,
-                                borderRadius: const BorderRadius.only(topRight: Radius.circular(20.0), topLeft: Radius.circular(20.0)),
+                              decoration: const BoxDecoration(
+                                // Arrondir les bords supérieurs du BottomSheet
+                                borderRadius: BorderRadius.only(topRight: Radius.circular(40.0), topLeft: Radius.circular(40.0)),
                               ),
-                              padding: const EdgeInsets.all(20),
-
-                              // Afficher les settings les uns en dessous des autres
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
 
+
                                   // En-tête du BottomSheet
-                                  Column(
-                                    children: [
-                                      // Affichage d'une petite barre
-                                      Padding(
-                                        padding: const EdgeInsets.only(left: 150, right: 150, bottom: 10),
-                                        child: Container(
-                                          height: 8,
-                                          width: 80,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade300,
-                                            borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                  SizedBox(
+                                    child: Container(
+                                      padding: const EdgeInsets.only(left: 20, right: 20),
+                                      child: Column(
+                                        children: [
+
+                                          // Affichage d'une petite barre
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 150, top: 20, right: 150, bottom: 20),
+                                            child: Container(
+                                              height: 8,
+                                              width: 80,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade300,
+                                                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                              ),
+                                            ),
                                           ),
+
+
+                                          // Titre de l'en-tête
+                                          Text(
+                                            AppLocalizations.of(context)!.settings,
+                                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                          ),
+
+
+                                          // Affichage d'une petite barre pour séparer l'en-tête du contenu
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 20),
+                                            child: Container(
+                                              height: 1,
+                                              width: double.maxFinite,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade300,
+                                                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+
+                                  // Contenu du BottomSheet
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+
+
+                                            // Trier la liste
+                                            Text(AppLocalizations.of(context)!.whichDisplayOrder),
+                                            // DropDown pour sélectionner le tri de la liste
+                                            DropdownMenu<String>(
+                                              // Afficher le nom du tri par défaut
+                                              initialSelection: _sortPref.toString(),
+                                              onSelected: (String? value) {
+                                                setState(() {
+                                                  // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
+                                                  _saveSortPref(value.toString());
+                                                  loadTasks();
+                                                });
+                                              },
+                                              // Contient les différents choix pour trier la liste
+                                              dropdownMenuEntries: mySortPrefs.map<DropdownMenuEntry<String>>((String value) {
+                                                return DropdownMenuEntry<String>(value: value, label: value);
+                                              }).toList(),
+                                            ),
+
+
+                                            // Afficher ou non les tâches terminées
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 20),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(AppLocalizations.of(context)!.displayCompletedTasks),
+                                                  Switch(
+                                                    // This bool value toggles the switch.
+                                                    value: _displayPref,
+                                                    onChanged: (bool value) {
+                                                      // This is called when the user toggles the switch.
+                                                      setState(() {
+                                                        _saveDisplayPref(value);
+                                                        loadTasks();
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+
+                                            // Choisir le thème de l'application
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 20),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(AppLocalizations.of(context)!.darkMode),
+                                                  Switch(
+                                                    // This bool value toggles the switch.
+                                                    value: !Provider.of<ThemeProvider>(context).light,
+                                                    onChanged: (bool value) {
+                                                      setState(() {
+                                                        //_saveModePrefs(value);
+
+                                                        _getThemePref().then((themeValue){
+                                                          Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
+                                                          if(themeValue=='light'){
+                                                            _saveThemePref('dark');
+                                                          }else{
+                                                            _saveThemePref('light');
+                                                          }
+                                                        });
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+
+                                            // Choisir la langue de l'application
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 20),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(AppLocalizations.of(context)!.language),
+                                                  DropdownMenu<String>(
+                                                    // Afficher le nom du tri par défaut
+                                                    label: Text(_currentLanguage),
+                                                    onSelected: (String? value) {
+                                                      setState(() {
+                                                        // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
+
+                                                        switch(value.toString()){
+                                                          case "Français":
+                                                            MainApp.setLocale(context, Locale('fr'));
+                                                            _saveLanguagePref("fr").then((result)  {
+                                                              _currentLanguage = value.toString();
+                                                              translateSortPrefs();
+                                                            });
+                                                          case "English":
+                                                            MainApp.setLocale(context, Locale('en'));
+                                                            _saveLanguagePref("en").then((result)  {
+                                                              _currentLanguage = value.toString();
+                                                              translateSortPrefs();
+                                                            });
+                                                          case "Español":
+                                                            MainApp.setLocale(context, Locale('es'));
+                                                            _saveLanguagePref("es").then((result)  {
+                                                              _currentLanguage = value.toString();
+                                                              translateSortPrefs();
+                                                            });
+                                                        }
+                                                        Navigator.pop(context);
+                                                      });
+                                                    },
+                                                    // Contient les différents choix pour trier la liste
+                                                    dropdownMenuEntries: languages.map<DropdownMenuEntry<String>>((String value) {
+                                                      return DropdownMenuEntry<String>(value: value, label: value);
+                                                    }).toList(),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-
-                                      // Affichage d'un titre
-                                      Text(
-                                        AppLocalizations.of(context)!.settings,
-                                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                                      ),
-
-                                      // Affichage d'une petite barre pour séparer l'en-tête du contenu
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 20),
-                                        child: Container(
-                                          height: 1,
-                                          width: double.maxFinite,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade300,
-                                            borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(AppLocalizations.of(context)!.whichDisplayOrder),
-
-
-                                  // DropDown pour sélectionner le tri de la liste
-                                  DropdownMenu<String>(
-                                    // Afficher le nom du tri par défaut
-                                    label: Text(_sortPref.toString()),
-                                    onSelected: (String? value) {
-                                      setState(() {
-                                        // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
-                                        _saveSortPref(value.toString());
-                                        loadTasks();
-                                      });
-                                    },
-                                    // Contient les différents choix pour trier la liste
-                                    dropdownMenuEntries: mySortPrefs.map<DropdownMenuEntry<String>>((String value) {
-                                      return DropdownMenuEntry<String>(value: value, label: value);
-                                    }).toList(),
-                                  ),
-
-
-                                  Text(AppLocalizations.of(context)!.displayCompletedTasks),
-                                  Switch(
-                                    // This bool value toggles the switch.
-                                    value: _displayPref,
-                                    onChanged: (bool value) {
-                                      // This is called when the user toggles the switch.
-                                      setState(() {
-                                        _saveDisplayPref(value);
-                                        loadTasks();
-                                      });
-                                    },
-                                  ),
-
-                                  Text(AppLocalizations.of(context)!.darkMode),
-                                  Switch(
-                                    // This bool value toggles the switch.
-                                    value: !Provider.of<ThemeProvider>(context).light,
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        //_saveModePrefs(value);
-
-                                        _getThemePref().then((themeValue){
-                                          Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
-                                          if(themeValue=='light'){
-                                            _saveThemePref('dark');
-                                          }else{
-                                            _saveThemePref('light');
-                                          }
-                                        });
-                                      });
-                                    },
-                                  ),
-
-                                  Text(AppLocalizations.of(context)!.language),
-                                  DropdownMenu<String>(
-                                    // Afficher le nom du tri par défaut
-                                    label: Text(_currentLanguage),
-                                    onSelected: (String? value) {
-                                      setState(() {
-                                        // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
-
-                                        switch(value.toString()){
-                                          case "Français":
-                                            MainApp.setLocale(context, Locale('fr'));
-                                            _saveLanguagePref("fr").then((result)  {
-                                              _currentLanguage = value.toString();
-                                              translateSortPrefs();
-                                            });
-                                          case "English":
-                                            MainApp.setLocale(context, Locale('en'));
-                                            _saveLanguagePref("en").then((result)  {
-                                              _currentLanguage = value.toString();
-                                              translateSortPrefs();
-                                            });
-                                          case "Español":
-                                            MainApp.setLocale(context, Locale('es'));
-                                            _saveLanguagePref("es").then((result)  {
-                                              _currentLanguage = value.toString();
-                                              translateSortPrefs();
-                                            });
-                                        }
-                                        Navigator.pop(context);
-                                      });
-                                    },
-                                    // Contient les différents choix pour trier la liste
-                                    dropdownMenuEntries: languages.map<DropdownMenuEntry<String>>((String value) {
-                                      return DropdownMenuEntry<String>(value: value, label: value);
-                                    }).toList(),
-                                  ),
+                                    ),
+                                  )
                                 ],
                               ),
                             )

@@ -58,6 +58,8 @@ class _HomePageState extends State<HomePage> {
                 if(isDarkMode && Provider.of<ThemeProvider>(context,listen: false).light == true){
                   Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
                   _saveThemePref('dark');
+                }else{
+                  _saveThemePref('light');
                 }
               }else{
                 if(_themePref == 'dark'){
@@ -149,7 +151,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<String> _getThemePref() async{
     final prefs = await SharedPreferences.getInstance();
-    _themePref = prefs.getString('themePref') ?? 'light';
+    _themePref = prefs.getString('themePref') ?? '';
     return _themePref;
   }
 

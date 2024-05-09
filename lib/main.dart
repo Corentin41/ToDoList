@@ -40,24 +40,22 @@ class MainApp extends StatefulWidget {
       });
     }
 
-
-
     @override
-  void initState() {
-      getLanguagePref().then((value) {
-        setState(() {
-          // Changer la langue de l'application en fonction de value
-          switch(value){
-            case "fr" :
-              _locale = Locale("fr");
-            case "en" :
-              _locale = Locale("en");
-            case "es" :
-              _locale = Locale("es");
-          }
+    void initState() {
+        getLanguagePref().then((value) {
+          setState(() {
+            // Changer la langue de l'application en fonction de value
+            switch(value){
+              case "fr" :
+                _locale = Locale("fr");
+              case "en" :
+                _locale = Locale("en");
+              case "es" :
+                _locale = Locale("es");
+            }
+          });
         });
-      });
-  }
+    }
 
   // Fonction pour récupérer le SharedPref de la langue
     Future<String> getLanguagePref() async {

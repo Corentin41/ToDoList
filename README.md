@@ -28,4 +28,8 @@ Pour ce projet, nous avons respecté toutes les contraintes imposées par le suj
 Toutes ces fonctionnalités sont accessibles via le bouton des paramètres qui se trouve dans la navBar (sur la page d'affichage des tâches)
 
 ## Limitations
-Avant de lancer le projet, il faut utiliser la commande ```flutter gen-l10n``` dans le terminal afin de générer les fichiers d'internationalisation pour la traduction de l'application.
+Avant de lancer le projet pour la première fois et après chaque modification des fichiers de langues (app_en.arb,...), il faut utiliser la commande ```flutter gen-l10n``` dans le
+terminal afin de générer les fichiers d'internationalisation pour la traduction de l'application.
+
+Nous n'avons pas réussi à exporter dans un fichier autre que home.dart le formulaire des paramètres. Nous avons essayé mais étant donné qu'une fois le nouveau mode de tri sélectionné
+il fallait rafraichir la page, nous n'avons pas pu.

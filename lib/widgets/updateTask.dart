@@ -21,15 +21,12 @@ class UpdateTask extends StatefulWidget {
 
 class _UpdateTaskState extends State<UpdateTask> {
 
-
   // Liste des tâches et la BDD
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
-
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
 
   // Initialiser les valeur contenues dans une tâche
   String _taskName = '';
@@ -38,15 +35,12 @@ class _UpdateTaskState extends State<UpdateTask> {
   String _lat = '';
   String _lng = '';
 
-
   // Booléen permettant de vérifier si l'adresse saisie est correcte
   bool _testAddress = true;
-
 
   // Contiennent les valeurs dans le form
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-
 
   @override
   initState() {
@@ -59,14 +53,12 @@ class _UpdateTaskState extends State<UpdateTask> {
     _addressController.text = widget.task.address!;
   }
 
-
   // Pour afficher la map centrée sur l'adresse entrée précédemment
   TileLayer get openStreetMapTilelayer =>
       TileLayer(
         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         userAgentPackageName: 'dev.fleaflet.flutter_map.example',
       );
-
 
   @override
   Widget build(BuildContext context) {
@@ -85,8 +77,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                 key: _formKey,
                 child: Column(
                   children: [
-
-
 
                     // Champ pour modifier le titre de la tâche
                     Padding(
@@ -113,8 +103,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                       ),
                     ),
 
-
-
                     // Champ pour modifier la description
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
@@ -134,8 +122,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                         },
                       ),
                     ),
-
-
 
                     // Champ pour modifier la date
                     Padding(
@@ -165,8 +151,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                       ),
                     ),
 
-
-
                     // Champ pour modifier l'adresse
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
@@ -179,8 +163,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                         ),
                       ),
                     ),
-
-
 
                     // Modifier le niveau de priorité de la tâche
                     Padding(
@@ -211,8 +193,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                         ],
                       ),
                     ),
-
-
 
                     // Boutons pour confirmer ou annuler la modification
                     Row(
@@ -273,8 +253,6 @@ class _UpdateTaskState extends State<UpdateTask> {
                                 style: TextStyle(color: Colors.white),)),
                         ),
 
-
-
                         // Bouton pour annuler la modification de tâche
                         Container(
                           padding: const EdgeInsets.all(10),
@@ -301,8 +279,6 @@ class _UpdateTaskState extends State<UpdateTask> {
     );
   }
 
-
-
   // Fonction pour vérifier si l'utilisateur a entré une date ou non
   bool checkDate(Task task) {
     if (task.date != null && task.date!.isNotEmpty) {
@@ -310,8 +286,6 @@ class _UpdateTaskState extends State<UpdateTask> {
     }
     return false;
   }
-
-
 
   // Fonction qui permet de vérifier si l'adresse entrée existe
   Future<bool> testAddress() async {
@@ -325,5 +299,4 @@ class _UpdateTaskState extends State<UpdateTask> {
     }
     return _testAddress;
   }
-
 }

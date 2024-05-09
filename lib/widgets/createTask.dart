@@ -68,8 +68,6 @@ class _CreateTaskState extends State<CreateTask> {
                 child: Column(
                   children: [
 
-
-
                     // Champ pour saisir le titre
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
@@ -94,8 +92,6 @@ class _CreateTaskState extends State<CreateTask> {
                       ),
                     ),
 
-
-
                     // Champ pour saisir la description
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
@@ -113,8 +109,6 @@ class _CreateTaskState extends State<CreateTask> {
                         },
                       ),
                     ),
-
-
 
                     // Champ pour saisir la date
                     Padding(
@@ -147,8 +141,6 @@ class _CreateTaskState extends State<CreateTask> {
                       ),
                     ),
 
-
-
                     // Champ pour saisir l'adresse
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
@@ -161,8 +153,6 @@ class _CreateTaskState extends State<CreateTask> {
                         ),
                       ),
                     ),
-
-
 
                     // Définir le niveau de priorité de la tâche
                     Padding(
@@ -192,8 +182,6 @@ class _CreateTaskState extends State<CreateTask> {
                         ],
                       ),
                     ),
-
-
 
                     // Boutons pour ajouter une tâche ou annuler l'ajout
                     Row(
@@ -266,8 +254,6 @@ class _CreateTaskState extends State<CreateTask> {
       ),
     );
   }
-
-
 
   // Fonction qui permet de vérifier si l'adresse entrée existe
   Future<bool> testAddress() async {

@@ -28,13 +28,11 @@ class DisplayTask extends StatelessWidget {
     // Récupérer la taille de l'écran
     Size size = MediaQuery.of(context).size;
 
-
     // Pour les données météo
     String _tempMin = '';
     String _tempActuelle = '';
     String _tempMax = '';
     String _icon = '';
-
 
     // Si on a une adresse pour la tâche alors on peut récupérer la météo
     if (task.lat.toString().isNotEmpty && task.lng.toString().isNotEmpty) {
@@ -44,7 +42,6 @@ class DisplayTask extends StatelessWidget {
       // Récupérer la météo à partir d'une ville
       List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
       String city = placemarks.first.locality!;
-
 
       // Appel à l'API Météo
       const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
@@ -66,7 +63,6 @@ class DisplayTask extends StatelessWidget {
       }
     }
 
-
     // Affichage des données de la tâche dans un BottomSheet
     showModalBottomSheet(
       backgroundColor: Theme.of(context).colorScheme.background,
@@ -85,8 +81,6 @@ class DisplayTask extends StatelessWidget {
           ),
           child: Column(
             children: [
-
-
 
               // En-tête du BottomSheet
               SizedBox(
@@ -107,7 +101,6 @@ class DisplayTask extends StatelessWidget {
                           ),
                         ),
                       ),
-
 
                       // Titre de l'en-tête + Bouton Modifier
                       Row(
@@ -134,7 +127,6 @@ class DisplayTask extends StatelessWidget {
                         ],
                       ),
 
-
                       // Affichage d'une petite barre pour séparer l'en-tête du contenu
                       Padding(
                         padding: const EdgeInsets.only(top: 20),
@@ -151,8 +143,6 @@ class DisplayTask extends StatelessWidget {
                   ),
                 ),
               ),
-
-
 
               // Contenu du BottomSheet
               Expanded(
@@ -205,8 +195,6 @@ class DisplayTask extends StatelessWidget {
                           ),
                         ),
 
-
-
                         // Date de la tâche
                         Container(
                           margin: const EdgeInsets.only(bottom: 20),
@@ -218,6 +206,7 @@ class DisplayTask extends StatelessWidget {
                             padding: const EdgeInsets.all(20),
                             child: Row(
                               children: [
+
                                 const Padding(
                                   padding: EdgeInsets.only(right: 10),
                                   child: Icon(Icons.event_note),
@@ -231,8 +220,6 @@ class DisplayTask extends StatelessWidget {
                           ),
                         ),
 
-
-
                         // Informations concernant l'adresse (adresse, map et météo)
                         Container(
                           margin: const EdgeInsets.only(bottom: 20),
@@ -244,9 +231,11 @@ class DisplayTask extends StatelessWidget {
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               children: [
+
                                 // Adresse de la tâche
                                 Row(
                                   children: [
+
                                     const Padding(
                                       padding: EdgeInsets.only(right: 10),
                                       child: Icon(IconData(0xe3ab, fontFamily: 'MaterialIcons')),
@@ -271,7 +260,6 @@ class DisplayTask extends StatelessWidget {
                                         initialCenter: LatLng(task.getDoubleLat(),
                                             task.getDoubleLng()),
                                         initialZoom: 11,
-
                                       ),
                                       children: [
                                         // Pour afficher la map centrée sur l'adresse entrée précédemment
@@ -299,8 +287,6 @@ class DisplayTask extends StatelessWidget {
                                   // Sinon ne rien afficher
                                   : null
                                 ),
-
-
 
                                 // Données météo relatives à l'adresse
                                 Container(

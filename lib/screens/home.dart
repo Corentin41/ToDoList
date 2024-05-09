@@ -37,12 +37,11 @@ class _HomePageState extends State<HomePage> {
   bool _displayPref = true; // Pour l'affichage des tâches terminées
   String _themePref = '';
   String _orderBy = '';// Pour la BDD
-
   
   @override
   void initState() {
     super.initState();
-    // Récupérer le tri de la liste (SharedPrefs)
+    // Récupérer les sharedPrefs afin d'initialiser l'application
     _getSortPref().then((sortValue) {
         _getLanguagePref().then((languageValue) {
           _getThemePref().then((themeValue) {
@@ -55,6 +54,7 @@ class _HomePageState extends State<HomePage> {
                 var brightness = MediaQuery.of(context).platformBrightness;
                 bool isDarkMode = brightness == Brightness.dark;
 
+                // Si il y a pas de sharedPref d'enregistré, on applique le theme du telephone a l'application
                 if(isDarkMode && Provider.of<ThemeProvider>(context,listen: false).light == true){
                   Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
                   _saveThemePref('dark');
@@ -74,7 +74,6 @@ class _HomePageState extends State<HomePage> {
         });
     });
   }
-
   
   // Fonction qui permet de récupérer toutes les tâches stockées en BDD
   void loadTasks() async {
@@ -149,17 +148,18 @@ class _HomePageState extends State<HomePage> {
     prefs.setBool('displayPref', value);
   }
 
+  // Récupérer depuis les SharedPreferences le choix du theme
   Future<String> _getThemePref() async{
     final prefs = await SharedPreferences.getInstance();
     _themePref = prefs.getString('themePref') ?? '';
     return _themePref;
   }
 
+  // Stocker dans les SharedPreferences le choix du theme
   Future<void> _saveThemePref(String value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('themePref', value);
   }
-
   
   @override
   Widget build(BuildContext context) {
@@ -238,8 +238,6 @@ class _HomePageState extends State<HomePage> {
                                     DisplayTask.showTask(context, task);
                                   },
 
-
-
                                   // Icon indiquant si la tâche est terminée ou non
                                   leading: IconButton(
                                     // Si la tâche est terminée (isDone à 1) alors afficher une check_box pleine
@@ -248,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                                         : const Icon(Icons.check_box),
                                     color: task.isDone == 1 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.background,
 
-                                    // Au click sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
+                                    // Au clique sur la box on change l'état de la tâche (terminée = 1 / en cours = 0)
                                     onPressed: () {
                                       setState(() {
                                         if (task.isDone == 0) {
@@ -264,8 +262,6 @@ class _HomePageState extends State<HomePage> {
                                     },
                                   ),
 
-
-
                                   // Affiche le titre de la tâche
                                   title: Text(
                                     task.name,
@@ -278,8 +274,6 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
 
-
-
                                   // Appeler la fonction checkDate pour afficher ou non la date en sous-titre
                                   subtitle: checkDate(task) == true
                                       ? Text(
@@ -291,8 +285,6 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   )
                                       : null,
-
-
 
                                   // Bouton pour supprimer avec confirmation
                                   trailing: Container(
@@ -345,8 +337,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
 
-
-
         // Ajouter une nouvelle tâche
         floatingActionButton: FloatingActionButton(
           backgroundColor: Theme.of(context).colorScheme.primary,
@@ -358,9 +348,6 @@ class _HomePageState extends State<HomePage> {
         )
     );
   }
-
-
-
 
   // Fonction pour créer l'AppBar et afficher les settings de l'application
   AppBar _buildAppBar() {
@@ -399,7 +386,6 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
 
-
                                   // En-tête du BottomSheet
                                   SizedBox(
                                     child: Container(
@@ -420,13 +406,11 @@ class _HomePageState extends State<HomePage> {
                                             ),
                                           ),
 
-
                                           // Titre de l'en-tête
                                           Text(
                                             AppLocalizations.of(context)!.settings,
                                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                           ),
-
 
                                           // Affichage d'une petite barre pour séparer l'en-tête du contenu
                                           Padding(
@@ -445,7 +429,6 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
 
-
                                   // Contenu du BottomSheet
                                   Expanded(
                                     child: SingleChildScrollView(
@@ -454,7 +437,6 @@ class _HomePageState extends State<HomePage> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-
 
                                             // Trier la liste
                                             Text(AppLocalizations.of(context)!.whichDisplayOrder),
@@ -474,7 +456,6 @@ class _HomePageState extends State<HomePage> {
                                                 return DropdownMenuEntry<String>(value: value, label: value);
                                               }).toList(),
                                             ),
-
 
                                             // Afficher ou non les tâches terminées
                                             Padding(
@@ -497,7 +478,6 @@ class _HomePageState extends State<HomePage> {
                                                 ],
                                               ),
                                             ),
-
 
                                             // Choisir le thème de l'application
                                             Padding(
@@ -527,7 +507,6 @@ class _HomePageState extends State<HomePage> {
                                                 ],
                                               ),
                                             ),
-
 
                                             // Choisir la langue de l'application
                                             Padding(
@@ -595,8 +574,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-
   // Fonction pour vérifier si l'utilisateur a entré une date ou non
   bool checkDate(Task task) {
     if (task.date != null && task.date!.isNotEmpty) {
@@ -604,8 +581,6 @@ class _HomePageState extends State<HomePage> {
     }
     return false;
   }
-
-
 
   // Fonction pour informer que la tâche a bien été supprimée
   notifDelete() {
@@ -619,6 +594,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  //Traduit la liste des options de tri de la liste et sauvegarde la préférences en fonction de la lanque actuelle de l'application
   void translateSortPrefs() {
     int i = getSortIndex();
 
@@ -631,6 +607,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Récupère l'indice du choix selectionné dans la liste des options de tri pour la traduction
   int getSortIndex(){
     int i = mySortPrefs.indexWhere((element) => element == _sortPref);
     if(i==-1){

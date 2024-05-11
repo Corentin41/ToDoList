@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -6,10 +5,10 @@ import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todolist/main.dart';
 import 'package:todolist/themes/theme_provider.dart';
-import 'package:todolist/widgets/displayTask.dart';
-import '../database/task_db.dart';
-import '../model/task.dart';
-import '../widgets/createTask.dart';
+import 'package:todolist/screens/displayTask.dart';
+import 'database/task_db.dart';
+import 'model/task.dart';
+import 'screens/createTask.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,17 +24,15 @@ class _HomePageState extends State<HomePage> {
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
-  // Liste qui contient les titres pour trier la liste des tâches
+  // Listes qui contiennent les valeurs des DropDownMenu (tri de la liste et traduction de l'app)
   List<String> mySortPrefs = ['Priorité','Date de création','Date d\'échéance'];
-
   List<String> languages = ['Français','English','Español'];
-
-  String _currentLanguage = '';
   
   // Initialiser les SharedPrefs
   String _sortPref = ''; // Pour le tri de la liste
   bool _displayPref = true; // Pour l'affichage des tâches terminées
-  String _themePref = '';
+  String _themePref = ''; // Pour le thème de l'app
+  String _currentLanguage = ''; // Pour la langue de l'app
   String _orderBy = '';// Pour la BDD
   
   @override
@@ -47,7 +44,7 @@ class _HomePageState extends State<HomePage> {
           _getThemePref().then((themeValue) {
             setState(() {
               if (_sortPref.isEmpty) {
-                _sortPref = AppLocalizations.of(context)!.priority;
+                _sortPref = AppLocalizations.of(context).priority;
               }
 
               if(_themePref.isEmpty){
@@ -66,7 +63,7 @@ class _HomePageState extends State<HomePage> {
                   Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
                 }
               }
-
+              // Recharger la liste des tâches et traduire les options dans le DropDownMenu
               loadTasks();
               translateSortPrefs();
             });
@@ -86,13 +83,13 @@ class _HomePageState extends State<HomePage> {
 
     setState(()  {
       // Adapter le nom du _sortPref pour pouvoir le passer dans la requête SQL
-      if (_sortPref == AppLocalizations.of(context)!.priority) {
+      if (_sortPref == AppLocalizations.of(context).priority) {
         _orderBy = 'priority';
       }
-      else if (_sortPref == AppLocalizations.of(context)!.creationDate) {
+      else if (_sortPref == AppLocalizations.of(context).creationDate) {
         _orderBy = 'created_at';
       }
-      else if (_sortPref == AppLocalizations.of(context)!.dueDate) {
+      else if (_sortPref == AppLocalizations.of(context).dueDate) {
         _orderBy = 'date';
       }
       // Afficher la liste triée en fonction du _sortPref
@@ -104,7 +101,7 @@ class _HomePageState extends State<HomePage> {
   // Récupérer depuis les SharedPreferences le choix du tri de la liste
   Future<String> _getSortPref() async {
     final prefs = await SharedPreferences.getInstance();
-    _sortPref = prefs.getString('sortPref') ?? AppLocalizations.of(context)!.priority;
+    _sortPref = prefs.getString('sortPref') ?? AppLocalizations.of(context).priority;
     return _sortPref;
   }
 
@@ -114,7 +111,7 @@ class _HomePageState extends State<HomePage> {
     prefs.setString('sortPref', value);
   }
 
-  // Récupérer depuis les SharedPreferences le choix du tri de la liste
+  // Récupérer depuis les SharedPreferences le choix de la langue
   Future<String> _getLanguagePref() async {
     final prefs = await SharedPreferences.getInstance();
     _currentLanguage = prefs.getString('languagePref') ?? "fr";
@@ -129,7 +126,7 @@ class _HomePageState extends State<HomePage> {
     return _currentLanguage;
   }
 
-  // Stocker dans les SharedPreferences le choix du tri de la liste
+  // Stocker dans les SharedPreferences le choix de la langue
   Future<void> _saveLanguagePref(String value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('languagePref', value);
@@ -182,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                   else {
                     // S'il n'y a aucune tâche enregistrée en BDD alors afficher un message
                     if (snapshot.data == null || snapshot.data!.isEmpty) {
-                      return Center(child: Text(AppLocalizations.of(context)!.noTask, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
+                      return Center(child: Text(AppLocalizations.of(context).noTask, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)));
                     }
                     // Sinon récupérer les tâchs pour les afficher sous forme de liste
                     else {
@@ -303,11 +300,11 @@ class _HomePageState extends State<HomePage> {
                                         QuickAlert.show(
                                             context: context,
                                             type: QuickAlertType.confirm,
-                                            title: AppLocalizations.of(context)?.deleteTask,
-                                            text: AppLocalizations.of(context)?.confirmDeleteTask,
-                                            confirmBtnText: AppLocalizations.of(context)!.delete,
+                                            title: AppLocalizations.of(context).deleteTask,
+                                            text: AppLocalizations.of(context).confirmDeleteTask,
+                                            confirmBtnText: AppLocalizations.of(context).delete,
                                             confirmBtnColor: Colors.red,
-                                            cancelBtnText: AppLocalizations.of(context)!.cancel,
+                                            cancelBtnText: AppLocalizations.of(context).cancel,
                                             onConfirmBtnTap: () {
                                               setState(() {
                                                 // Appel à la méthode delete de la BDD pour supprimer la tâche
@@ -357,7 +354,8 @@ class _HomePageState extends State<HomePage> {
 
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      title: Text(AppLocalizations.of(context)!.myTasks),
+      title: Text(AppLocalizations.of(context).myTasks),
+      automaticallyImplyLeading: false,
       actions: [
         Builder(builder: (context){
           return IconButton(
@@ -408,7 +406,7 @@ class _HomePageState extends State<HomePage> {
 
                                           // Titre de l'en-tête
                                           Text(
-                                            AppLocalizations.of(context)!.settings,
+                                            AppLocalizations.of(context).settings,
                                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                                           ),
 
@@ -439,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                                           children: [
 
                                             // Trier la liste
-                                            Text(AppLocalizations.of(context)!.whichDisplayOrder),
+                                            Text(AppLocalizations.of(context).whichDisplayOrder),
                                             // DropDown pour sélectionner le tri de la liste
                                             DropdownMenu<String>(
                                               // Afficher le nom du tri par défaut
@@ -463,7 +461,7 @@ class _HomePageState extends State<HomePage> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(AppLocalizations.of(context)!.displayCompletedTasks),
+                                                  Text(AppLocalizations.of(context).displayCompletedTasks),
                                                   Switch(
                                                     // This bool value toggles the switch.
                                                     value: _displayPref,
@@ -485,14 +483,12 @@ class _HomePageState extends State<HomePage> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(AppLocalizations.of(context)!.darkMode),
+                                                  Text(AppLocalizations.of(context).darkMode),
                                                   Switch(
                                                     // This bool value toggles the switch.
                                                     value: !Provider.of<ThemeProvider>(context).light,
                                                     onChanged: (bool value) {
                                                       setState(() {
-                                                        //_saveModePrefs(value);
-
                                                         _getThemePref().then((themeValue){
                                                           Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
                                                           if(themeValue=='light'){
@@ -501,6 +497,8 @@ class _HomePageState extends State<HomePage> {
                                                             _saveThemePref('light');
                                                           }
                                                         });
+                                                        // Fermer le BottomSheet après mise à jour
+                                                        Navigator.pop(context);
                                                       });
                                                     },
                                                   ),
@@ -514,34 +512,34 @@ class _HomePageState extends State<HomePage> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(AppLocalizations.of(context)!.language),
+                                                  Text(AppLocalizations.of(context).language),
                                                   DropdownMenu<String>(
                                                     // Afficher le nom du tri par défaut
                                                     label: Text(_currentLanguage),
                                                     onSelected: (String? value) {
                                                       setState(() {
                                                         // Sauvegarder le choix en SharedPrefs et rafraîchir la liste des tâches en conséquence
-
                                                         switch(value.toString()){
                                                           case "Français":
-                                                            MainApp.setLocale(context, Locale('fr'));
+                                                            MainApp.setLocale(context, const Locale('fr'));
                                                             _saveLanguagePref("fr").then((result)  {
                                                               _currentLanguage = value.toString();
                                                               translateSortPrefs();
                                                             });
                                                           case "English":
-                                                            MainApp.setLocale(context, Locale('en'));
+                                                            MainApp.setLocale(context, const Locale('en'));
                                                             _saveLanguagePref("en").then((result)  {
                                                               _currentLanguage = value.toString();
                                                               translateSortPrefs();
                                                             });
                                                           case "Español":
-                                                            MainApp.setLocale(context, Locale('es'));
+                                                            MainApp.setLocale(context, const Locale('es'));
                                                             _saveLanguagePref("es").then((result)  {
                                                               _currentLanguage = value.toString();
                                                               translateSortPrefs();
                                                             });
                                                         }
+                                                        // Fermer le BottomSheet après mise à jour
                                                         Navigator.pop(context);
                                                       });
                                                     },
@@ -588,19 +586,19 @@ class _HomePageState extends State<HomePage> {
     return ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
-        content: Text(AppLocalizations.of(context)!.taskDeleted),
+        content: Text(AppLocalizations.of(context).taskDeleted),
         duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  //Traduit la liste des options de tri de la liste et sauvegarde la préférences en fonction de la lanque actuelle de l'application
+  // Traduit la liste des options de tri de la liste et sauvegarde la préférences en fonction de la lanque actuelle de l'application
   void translateSortPrefs() {
     int i = getSortIndex();
 
-    mySortPrefs[0] = AppLocalizations.of(context)!.priority;
-    mySortPrefs[1] = AppLocalizations.of(context)!.creationDate;
-    mySortPrefs[2] = AppLocalizations.of(context)!.dueDate;
+    mySortPrefs[0] = AppLocalizations.of(context).priority;
+    mySortPrefs[1] = AppLocalizations.of(context).creationDate;
+    mySortPrefs[2] = AppLocalizations.of(context).dueDate;
 
     _saveSortPref(mySortPrefs[i]).then((value) {
         _sortPref = mySortPrefs[i];

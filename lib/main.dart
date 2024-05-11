@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:todolist/screens/home.dart';
+import 'package:todolist/home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:todolist/themes/theme_provider.dart';
 
@@ -47,11 +47,11 @@ class MainApp extends StatefulWidget {
             // Changer la langue de l'application en fonction de value
             switch(value){
               case "fr" :
-                _locale = Locale("fr");
+                _locale = const Locale("fr");
               case "en" :
-                _locale = Locale("en");
+                _locale = const Locale("en");
               case "es" :
-                _locale = Locale("es");
+                _locale = const Locale("es");
             }
           });
         });
@@ -70,19 +70,19 @@ class MainApp extends StatefulWidget {
         debugShowCheckedModeBanner: false,
         title: 'ToDo App',
         theme: Provider.of<ThemeProvider>(context).themeData,
-        localizationsDelegates: [
+        localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
         locale: _locale,
-        supportedLocales: [
+        supportedLocales: const [
           Locale('fr'),
           Locale('en'),
           Locale('es')
         ],
-        home: HomePage(),
+        home: const HomePage(),
       );
     }
   }

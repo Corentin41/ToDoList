@@ -6,7 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:todolist/model/task.dart';
-import 'package:todolist/widgets/updateTask.dart';
+import 'package:todolist/screens/updateTask.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -59,7 +59,7 @@ class DisplayTask extends StatelessWidget {
         // Récupérer le type d'icone
         _icon = '${meteoData['weather'][0]['icon']}';
       } else {
-        throw Exception(AppLocalizations.of(context)?.weatherException);
+        throw Exception(AppLocalizations.of(context).weatherException);
       }
     }
 
@@ -110,7 +110,7 @@ class DisplayTask extends StatelessWidget {
                           const SizedBox(width: 32),
                           // Titre de l'en-tête
                           Text(
-                            AppLocalizations.of(context)!.taskDesc,
+                            AppLocalizations.of(context).taskDesc,
                             style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold),
@@ -186,7 +186,7 @@ class DisplayTask extends StatelessWidget {
                                   child: SizedBox(
                                     // S'il n'y a pas de description alors on précise
                                     child: task.description.isEmpty
-                                        ? Text(AppLocalizations.of(context)!.noDesc, style: const TextStyle(fontStyle: FontStyle.italic))
+                                        ? Text(AppLocalizations.of(context).noDesc, style: const TextStyle(fontStyle: FontStyle.italic))
                                         : Text(task.description),
                                   ),
                                 ),
@@ -213,7 +213,7 @@ class DisplayTask extends StatelessWidget {
                                 ),
                                 // S'il n'y a pas de description alors on précise
                                 task.date.toString().isEmpty
-                                    ? Text(AppLocalizations.of(context)!.noDate, style: TextStyle(fontStyle: FontStyle.italic))
+                                    ? Text(AppLocalizations.of(context).noDate, style: const TextStyle(fontStyle: FontStyle.italic))
                                     : Text(task.date.toString())
                               ],
                             ),
@@ -242,7 +242,7 @@ class DisplayTask extends StatelessWidget {
                                     ),
                                     // S'il n'y a pas de d'adresse alors on précise
                                     task.address.toString().isEmpty
-                                        ? Text(AppLocalizations.of(context)!.noAddress, style: const TextStyle(fontStyle: FontStyle.italic))
+                                        ? Text(AppLocalizations.of(context).noAddress, style: const TextStyle(fontStyle: FontStyle.italic))
                                         : Flexible(child: Text(task.address.toString()))
                                   ],
                                 ),
@@ -301,7 +301,7 @@ class DisplayTask extends StatelessWidget {
                                         Column(
                                           // Temp Actuelle
                                           children: [
-                                            Text(AppLocalizations.of(context)!.now),
+                                            Text(AppLocalizations.of(context).now),
                                             Text(_tempActuelle),
                                           ],
                                         ),
@@ -316,7 +316,7 @@ class DisplayTask extends StatelessWidget {
                                         // Temp Min Max
                                         Column(
                                           children: [
-                                            Text(AppLocalizations.of(context)!.minMax),
+                                            Text(AppLocalizations.of(context).minMax),
                                             Text("$_tempMin / $_tempMax"),
                                           ],
                                         )

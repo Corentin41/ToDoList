@@ -49,11 +49,11 @@
 
   "noTask" : "Ninguno tarea",
 
-  "deleteTask" : "Eliminando la tarea",
+  "deleteTask" : "Eliminar la tarea",
 
   "confirmDeleteTask" : "¿Confirmar la supresión de la tarea?",
 
-  "delete" : "Eliminar",
+  "delete" : "OK",
 
   "myTasks" : "Mis tareas",
 

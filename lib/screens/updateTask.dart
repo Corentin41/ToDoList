@@ -1,60 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
-import 'package:todolist/screens/home.dart';
-import '../database/task_db.dart';
+import 'package:todolist/home.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../database/task_db.dart';
 
-class CreateTask extends StatefulWidget {
+class UpdateTask extends StatefulWidget {
+  final Task task;
 
-  const CreateTask({super.key});
+  const UpdateTask({super.key, required this.task});
 
   @override
-  State<CreateTask> createState() => _CreateTaskState();
+  State<UpdateTask> createState() => _UpdateTaskState();
 }
 
-class _CreateTaskState extends State<CreateTask> {
-
+class _UpdateTaskState extends State<UpdateTask> {
 
   // Liste des tâches et la BDD
   Future<List<Task>>? futureTasks;
   final taskDB = TaskDB();
 
-
   // Pour le BottomSheet
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // Initialiser les valeur contenues dans une tâche
+  String _taskName = '';
+  String _taskDesc = '';
+  int _taskPriority = 2;
+  String _lat = '';
+  String _lng = '';
+
+  // Booléen permettant de vérifier si l'adresse saisie est correcte
+  bool _testAddress = true;
 
   // Contiennent les valeurs dans le form
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
-  // Initialiser les valeur contenues dans une tâche
-  String _taskName = '';
-  String _taskDesc = '';
-  int _taskPriority = 2; // Par défaut, les tâches sont secondaires (priorité niv 2)
-  String _lat = '';
-  String _lng = '';
-
-
-  // Booléen permettant de vérifier si l'adresse saisie est correcte
-  bool _testAddress = false;
-
-
   @override
-  void initState() {
+  initState() {
     super.initState();
+    // Initialiser le niveau de priorité de la tâche à modifier
+    _taskPriority = widget.task.priority;
+    // Récupérer l'adresse (s'il y a une adresse en BDD)
+    _lat = widget.task.lat!;
+    _lng = widget.task.lng!;
+    _addressController.text = widget.task.address!;
   }
 
+  // Pour afficher la map centrée sur l'adresse entrée précédemment
+  TileLayer get openStreetMapTilelayer =>
+      TileLayer(
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+      );
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.addTask),
+        title: Text(AppLocalizations.of(context).editTask),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Padding(
@@ -68,59 +76,63 @@ class _CreateTaskState extends State<CreateTask> {
                 child: Column(
                   children: [
 
-                    // Champ pour saisir le titre
+                    // Champ pour modifier le titre de la tâche
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: AppLocalizations.of(context)?.name
+                            border: const OutlineInputBorder(),
+                            hintText: AppLocalizations.of(context).name
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return AppLocalizations.of(context)?.addName;
+                            return AppLocalizations.of(context).addName;
                           }
                           else {
                             return null;
                           }
                         },
-                        // Sauvegarder le titre de la tâche
+                        // Afficher le titre précédemment entré par l'utilisateur
+                        initialValue: widget.task.name,
                         onSaved: (nameValue) {
                           _taskName = nameValue!;
                         },
                       ),
                     ),
 
-                    // Champ pour saisir la description
+                    // Champ pour modifier la description
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         minLines: 5,
+                        //controller: _descController,
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: AppLocalizations.of(context)?.desc
+                            border: const OutlineInputBorder(),
+                            hintText: AppLocalizations.of(context).desc
                         ),
-                        // Sauvegarder la description de la tâche
+                        // Afficher la description précédemment entrée par l'utilisateur
+                        initialValue: widget.task.description,
                         onSaved: (descValue) {
                           _taskDesc = descValue!;
                         },
                       ),
                     ),
 
-                    // Champ pour saisir la date
+                    // Champ pour modifier la date
                     Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                      child: TextFormField(
+                      padding: const EdgeInsets.only(
+                          left: 20, right: 20, bottom: 20),
+                      child: TextField(
                         controller: _dateController,
-                        decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: AppLocalizations.of(context)?.dueDate
-                        ),
+                        // Afficher la date dans le champ s'il y avait déjà une date, sinon afficher un label
+                        decoration: checkDate(widget.task) == true
+                            ? InputDecoration(border: const OutlineInputBorder(), hintText: widget.task.date.toString())
+                            : InputDecoration(border: const OutlineInputBorder(), labelText: AppLocalizations.of(context).dueDate),
+                        // Pour modifier la date, on doit cliquer sur le champ qui va ouvir une dialog
                         readOnly: true,
-                        // Pour ajouter la date, on doit cliquer sur le champ qui va ouvir une dialog
                         onTap: () async {
                           final DateTime? dateTime = await showDatePicker(
                             context: context,
@@ -134,35 +146,32 @@ class _CreateTaskState extends State<CreateTask> {
                             });
                           }
                         },
-                        // Sauvegarder la date de la tâche
-                        onChanged: (dateValue) {
-                          _dateController.text = dateValue;
-                        },
                       ),
                     ),
 
-                    // Champ pour saisir l'adresse
+                    // Champ pour modifier l'adresse
                     Padding(
                       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                       child: TextFormField(
                         keyboardType: TextInputType.multiline,
                         controller: _addressController,
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: AppLocalizations.of(context)?.address
+                            border: const OutlineInputBorder(),
+                            hintText: AppLocalizations.of(context).address
                         ),
                       ),
                     ),
 
-                    // Définir le niveau de priorité de la tâche
+                    // Modifier le niveau de priorité de la tâche
                     Padding(
-                      padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                      padding: const EdgeInsets.only(
+                          left: 20, right: 20, bottom: 20),
                       child: Row(
                         children: [
                           Text(
-                              AppLocalizations.of(context)!.setPriority,
-                              style: const TextStyle(fontWeight: FontWeight.bold)),
-
+                              AppLocalizations.of(context).changePriority,
+                              style: const TextStyle(fontWeight: FontWeight.bold)
+                          ),
                           IconButton(
                             // Si la tâche est prioritaire (priority à 1) alors afficher une étoile pleine
                             icon: Icon(_taskPriority == 1 ? Icons.star : Icons.star_border,
@@ -183,64 +192,77 @@ class _CreateTaskState extends State<CreateTask> {
                       ),
                     ),
 
-                    // Boutons pour ajouter une tâche ou annuler l'ajout
+                    // Boutons pour confirmer ou annuler la modification
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
 
-                        // Bouton pour ajouter la tâche
+                        // Bouton pour confirmer la modification
                         Container(
                           padding: const EdgeInsets.all(10),
                           child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green),
                               onPressed: () async {
-
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
 
-                                  // Vérifier que s'il y a une adresse alors elle existe
-                                  await testAddress();
-
-                                  // Si l'adresse saisie n'existe pas alors retourner une AlertDialog
-                                  if (_addressController.text.isNotEmpty && _testAddress == false) {
-                                    // Afficher une AlertDialog custom avec le package QuickAlert
-                                    return QuickAlert.show(
-                                      context: context,
-                                      type: QuickAlertType.warning,
-                                      title: AppLocalizations.of(context)?.warning,
-                                      text: AppLocalizations.of(context)?.wrongAddress,
-                                      confirmBtnText: AppLocalizations.of(context)!.ok
-                                    );
+                                  // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
+                                  if (_dateController.text.isEmpty) {
+                                    _dateController.text = widget.task.date.toString();
                                   }
 
-                                  // Ajout de la tâche dans la BDD
-                                  taskDB.create(
-                                      name: _taskName,
-                                      description: _taskDesc,
-                                      priority: _taskPriority,
-                                      date: _dateController.text,
-                                      lat: _lat,
-                                      lng: _lng,
-                                      address: _addressController.text
+                                  // Si l'adresse a été modifiée et n'est pas vide alors vérifier qu'elle existe
+                                  if (_addressController.text != widget.task.address) {
+                                    if (_addressController.text.isNotEmpty) {
+                                      // Récupérer les coordonnées à partir de l'adresse entrée
+                                      await testAddress();
+                                      if (_testAddress == false) {
+                                        // Afficher une AlertDialog custom avec le package QuickAlert
+                                        return QuickAlert.show(
+                                            context: context,
+                                            type: QuickAlertType.warning,
+                                            title: AppLocalizations.of(context).warning,
+                                            text: AppLocalizations.of(context).wrongAddress,
+                                            confirmBtnText: AppLocalizations.of(context).ok
+                                        );
+                                      }
+                                    }
+                                  }
+
+                                  // Modification de la tâche dans la BDD
+                                  taskDB.update(
+                                    id: widget.task.id,
+                                    name: _taskName,
+                                    description: _taskDesc,
+                                    priority: _taskPriority,
+                                    date: _dateController.text.toString(),
+                                    lat: _lat,
+                                    lng: _lng,
+                                    address: _addressController.text.toString(),
                                   );
                                   // Retourner sur la page d'affichage des tâches
                                   Navigator.pop(context);
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                                 }
                               },
-                              child: Text(AppLocalizations.of(context)!.add, style: TextStyle(color: Colors.white),)),
+                              child: Text(AppLocalizations.of(context).edit,
+                                style: const TextStyle(color: Colors.white))),
                         ),
 
-                        // Bouton pour annuler la création de tâche
+                        // Bouton pour annuler la modification de tâche
                         Container(
                           padding: const EdgeInsets.all(10),
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
                             onPressed: () {
+                              // Retourner sur la page d'affichage des tâches
                               Navigator.pop(context);
                             },
-                            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: Colors.white),),
+                            child: Text(AppLocalizations.of(context).cancel,
+                              style: const TextStyle(color: Colors.white),),
                           ),
                         )
                       ],
@@ -255,6 +277,14 @@ class _CreateTaskState extends State<CreateTask> {
     );
   }
 
+  // Fonction pour vérifier si l'utilisateur a entré une date ou non
+  bool checkDate(Task task) {
+    if (task.date != null && task.date!.isNotEmpty) {
+      return true;
+    }
+    return false;
+  }
+
   // Fonction qui permet de vérifier si l'adresse entrée existe
   Future<bool> testAddress() async {
     try {
@@ -267,5 +297,4 @@ class _CreateTaskState extends State<CreateTask> {
     }
     return _testAddress;
   }
-
 }

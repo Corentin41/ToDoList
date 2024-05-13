@@ -39,3 +39,6 @@ Cependant, si l'erreur persiste, vous pouvez utiliser la commande ```flutter gen
 
 Nous n'avons pas réussi à exporter dans un fichier autre que home.dart le formulaire des paramètres. Nous avons essayé mais étant donné qu'une fois le nouveau mode de tri sélectionné
 il fallait rafraichir la page, nous n'avons pas pu.
+
+Lors du changement de thème, le Bottom Sheet ne prend pas en compte le changement de thème (passage en mode sombre ou clair). Pour résoudre ce problème, nous avons choisi de fermer le Bottom Sheet après modification du thème.
+Ce qui donne une transition visuellement étrange avec par exemple un Bottom Sheet en theme clair qui se ferme alors que l'application est en mode sombre. Toutefois, ce soucis visuel est très furtif et n'impacte en rien le fonctionnement de l'application.

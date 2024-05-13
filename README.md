@@ -9,7 +9,7 @@ Ce projet a été réalisé par :
 - OpenStreetMap : pour récupérer et afficher les données météo à partir de l'adresse saisie
 
 ### Packages Flutter
-- shared_preferences : pour sauvegarder les choix de l'utilisateur (langue, thème, tri de la liste, afficher ou non les tâches terminées)
+- shared_preferences : pour sauvegarder les choix de l'utilisateur (langue, thème, tri de la liste, tâches terminées)
 - sqflite : pour la persistance des données à l'aide d'une BDD locale
 - flutter_map : pour afficher l'adresse saisie sur une carte (OpenStreetMap)
 - latlong2 : pour centrer la map et afficher un marqueur sur l'adresse saisie
@@ -30,7 +30,10 @@ Toutes ces fonctionnalités sont accessibles via le bouton des paramètres qui s
 
 ## Limitations
 Avant de lancer le projet pour la première fois et après chaque modification des fichiers de langues (app_en.arb,...), il arrive que le code ne trouve pas les fichiers d'internationalisation pour la traduction de l'application. 
-Ceux-ci ne sont pas générés automatiquement et celà crée l'erreur dans les import pour récupérer les Strings de l'application : ```Target of URI doesn't exist: 'package:flutter_gen/gen_l10n/app_localizations.dart'.```.
+Ceux-ci ne sont pas générés automatiquement et celà crée l'erreur dans les import pour récupérer les Strings de l'application :
+
+```Target of URI doesn't exist: 'package:flutter_gen/gen_l10n/app_localizations.dart'.```
+
 Le problème devrait être résolu grâce à l'ajout du fichier ```l10n.yaml```.
 Cependant, si l'erreur persiste, vous pouvez utiliser la commande ```flutter gen-l10n``` dans le terminal afin de générer les fichiers.
 

@@ -15,13 +15,23 @@ class ThemeProvider with ChangeNotifier{
   }
 
   // Change le thème de l'application
-  void toggleTheme(){
-    if(_themeData == lightMode){
+  void toggleTheme() {
+    if(_themeData == lightMode) {
       themeData = darkMode;
       _light = false;
-    }else{
+    } else {
       themeData = lightMode;
       _light = true;
     }
+  }
+
+  // Charger le thème sombre
+  void darkTheme() {
+    themeData = darkMode;
+  }
+
+  // Charger le thème clair
+  void lightTheme() {
+    themeData = lightMode;
   }
 }

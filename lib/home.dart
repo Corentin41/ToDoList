@@ -1,4 +1,6 @@
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -38,31 +40,38 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    // Empêcher de faire retour lorsqu'on se trouve sur la page d'accueil
+    BackButtonInterceptor.add(myInterceptor);
+
     // Récupérer les sharedPrefs afin d'initialiser l'application
     _getSortPref().then((sortValue) {
         _getLanguagePref().then((languageValue) {
           _getThemePref().then((themeValue) {
             setState(() {
+              // Par défaut, trier la liste par piorité de la tâche
               if (_sortPref.isEmpty) {
                 _sortPref = AppLocalizations.of(context).priority;
               }
 
-              if(_themePref.isEmpty){
+              // Par défaut, prendre le thème du téléphone
+              if (_themePref.isEmpty) {
                 var brightness = MediaQuery.of(context).platformBrightness;
                 bool isDarkMode = brightness == Brightness.dark;
 
                 // Si il y a pas de sharedPref d'enregistré, on applique le theme du telephone a l'application
-                if(isDarkMode && Provider.of<ThemeProvider>(context,listen: false).light == true){
+                if (isDarkMode && Provider.of<ThemeProvider>(context,listen: false).light == true) {
                   Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
                   _saveThemePref('dark');
-                }else{
+                } else {
                   _saveThemePref('light');
                 }
-              }else{
-                if(_themePref == 'dark'){
-                  Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
+              } else {
+                if (_themePref == 'dark') {
+                  Provider.of<ThemeProvider>(context,listen: false).darkTheme();
                 }
               }
+
               // Recharger la liste des tâches et traduire les options dans le DropDownMenu
               loadTasks();
               translateSortPrefs();
@@ -70,6 +79,11 @@ class _HomePageState extends State<HomePage> {
           });
         });
     });
+  }
+
+  // Au click sur le bouton retour du téléphone on ne fait rien
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    return true;
   }
   
   // Fonction qui permet de récupérer toutes les tâches stockées en BDD
@@ -146,7 +160,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Récupérer depuis les SharedPreferences le choix du theme
-  Future<String> _getThemePref() async{
+  Future<String> _getThemePref() async {
     final prefs = await SharedPreferences.getInstance();
     _themePref = prefs.getString('themePref') ?? '';
     return _themePref;
@@ -489,11 +503,11 @@ class _HomePageState extends State<HomePage> {
                                                     value: !Provider.of<ThemeProvider>(context).light,
                                                     onChanged: (bool value) {
                                                       setState(() {
-                                                        _getThemePref().then((themeValue){
+                                                        _getThemePref().then((themeValue) {
                                                           Provider.of<ThemeProvider>(context,listen: false).toggleTheme();
-                                                          if(themeValue=='light'){
+                                                          if (themeValue=='light') {
                                                             _saveThemePref('dark');
-                                                          }else{
+                                                          } else {
                                                             _saveThemePref('light');
                                                           }
                                                         });

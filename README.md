@@ -11,6 +11,7 @@ Ce projet a été réalisé par :
 ### Packages Flutter
 - shared_preferences : pour sauvegarder les choix de l'utilisateur (langue, thème, tri de la liste, tâches terminées)
 - sqflite : pour la persistance des données à l'aide d'une BDD locale
+- internet_connection_checker : pour vérifier qu'on a accès à un réseau Internet pour l'API et la map
 - flutter_map : pour afficher l'adresse saisie sur une carte (OpenStreetMap)
 - latlong2 : pour centrer la map et afficher un marqueur sur l'adresse saisie
 - geocoding : pour récupérer les coordonnées GPS (lat, lng) à partir d'une adresse sous forme de String

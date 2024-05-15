@@ -17,6 +17,12 @@
 
     "wrongAddress" : "Vous avez saisi une adresse incorrecte ou inexistante",
 
+    "noInternet" : "Pas de connexion Internet",
+
+    "networkAlertTitle" : "Erreur réseau",
+
+    "networkAlertContent" : "Veuillez vous connecter à Internet pour valider l'adresse",
+
     "ok" : "OK",
 
     "add" : "Ajouter",

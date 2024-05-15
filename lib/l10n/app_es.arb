@@ -17,6 +17,12 @@
 
   "wrongAddress" : "Ingresaste una dirección incorrecta o inexistente",
 
+  "noInternet" : "Sin conexión a Internet",
+
+  "networkAlertTitle" : "Error de red",
+
+  "networkAlertContent" : "Por favor conéctese a Internet para validar la dirección",
+
   "ok" : "OK",
 
   "add" : "Agregar",

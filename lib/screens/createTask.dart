@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
@@ -193,6 +194,20 @@ class _CreateTaskState extends State<CreateTask> {
                                 // Vérifier que l'utilisateur a saisi au moins un titre pour la tâche
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
+
+                                  // Vérifier que l'utilisateur a une connexion Internet pour vérifier l'adresse
+                                  if (_addressController.text.isNotEmpty) {
+                                    bool checkInternet = await InternetConnectionChecker().hasConnection;
+                                    if (checkInternet == false) {
+                                      return QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.warning,
+                                          title: AppLocalizations.of(context).networkAlertTitle,
+                                          text: AppLocalizations.of(context).networkAlertContent,
+                                          confirmBtnText: AppLocalizations.of(context).ok
+                                      );
+                                    }
+                                  }
 
                                   // Vérifier que s'il y a une adresse alors elle existe
                                   await testAddress();

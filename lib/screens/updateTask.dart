@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
@@ -211,6 +212,20 @@ class _UpdateTaskState extends State<UpdateTask> {
                                   // Si la date n'a pas été modifiée alors prendre la date déjà enregistrée en BDD
                                   if (_dateController.text.isEmpty) {
                                     _dateController.text = widget.task.date.toString();
+                                  }
+
+                                  // Vérifier que l'utilisateur a une connexion Internet pour vérifier l'adresse
+                                  if (_addressController.text.isNotEmpty) {
+                                    bool checkInternet = await InternetConnectionChecker().hasConnection;
+                                    if (checkInternet == false) {
+                                      return QuickAlert.show(
+                                          context: context,
+                                          type: QuickAlertType.warning,
+                                          title: AppLocalizations.of(context).networkAlertTitle,
+                                          text: AppLocalizations.of(context).networkAlertContent,
+                                          confirmBtnText: AppLocalizations.of(context).ok
+                                      );
+                                    }
                                   }
 
                                   // Si l'adresse a été modifiée et n'est pas vide alors vérifier qu'elle existe

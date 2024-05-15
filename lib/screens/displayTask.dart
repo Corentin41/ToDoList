@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/updateTask.dart';
@@ -28,6 +29,9 @@ class DisplayTask extends StatelessWidget {
     // Récupérer la taille de l'écran
     Size size = MediaQuery.of(context).size;
 
+    // Booléen pour vérifier si on a accès à Internet pour les appels API
+    bool checkInternet = false;
+
     // Pour les données météo
     String _tempMin = '';
     String _tempActuelle = '';
@@ -47,19 +51,23 @@ class DisplayTask extends StatelessWidget {
       const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
       final apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric&lang=fr';
 
-      final reponse = await http.get(Uri.parse(apiUrl));
+      checkInternet = await InternetConnectionChecker().hasConnection;
+      // S'assurer qu'on a accès à Internet pour faire l'appel API
+      if (checkInternet == true) {
+        final reponse = await http.get(Uri.parse(apiUrl));
 
-      if (reponse.statusCode == 200) {
-        Map<String, dynamic> meteoData = json.decode(reponse.body);
-        // Récupérer les températures
-        _tempMin = '${meteoData['main']['temp_min']}°C';
-        _tempActuelle = '${meteoData['main']['temp_min']}°C';
-        _tempMax = '${meteoData['main']['temp']}°C';
+        if (reponse.statusCode == 200) {
+          Map<String, dynamic> meteoData = json.decode(reponse.body);
+          // Récupérer les températures
+          _tempMin = '${meteoData['main']['temp_min']}°C';
+          _tempActuelle = '${meteoData['main']['temp_min']}°C';
+          _tempMax = '${meteoData['main']['temp']}°C';
 
-        // Récupérer le type d'icone
-        _icon = '${meteoData['weather'][0]['icon']}';
-      } else {
-        throw Exception(AppLocalizations.of(context).weatherException);
+          // Récupérer le type d'icone
+          _icon = '${meteoData['weather'][0]['icon']}';
+        } else {
+          throw Exception(AppLocalizations.of(context).weatherException);
+        }
       }
     }
 
@@ -243,13 +251,17 @@ class DisplayTask extends StatelessWidget {
                                     // S'il n'y a pas de d'adresse alors on précise
                                     task.address.toString().isEmpty
                                         ? Text(AppLocalizations.of(context).noAddress, style: const TextStyle(fontStyle: FontStyle.italic))
-                                        : Flexible(child: Text(task.address.toString()))
+                                        // S'il y a une adresse mais pas de connexion Internet alors on précise
+                                        : checkInternet == false
+                                          ? Text(AppLocalizations.of(context).noInternet, style: const TextStyle(fontStyle: FontStyle.italic))
+                                          : Flexible(child: Text(task.address.toString()))
                                   ],
                                 ),
 
 
 
-                                // Adresse sur une map (seulement s'il y a une adresse stockée en BDD)
+                                // Adresse sur une map (seulement s'il y a une adresse stockée en BDD) et seulement si Internet
+                                checkInternet == true ?
                                 Container(
                                   child: task.address.toString().isNotEmpty ?
                                   Container(
@@ -286,9 +298,12 @@ class DisplayTask extends StatelessWidget {
                                   )
                                   // Sinon ne rien afficher
                                   : null
-                                ),
+                                )
+                                // Si pas de connexion Internet alors on n'affiche pas la map
+                                    : Container(),
 
                                 // Données météo relatives à l'adresse
+                                checkInternet == true ?
                                 Container(
                                   // Afficher la météo seulement s'il y a une adresse stockée en BDD
                                   child: task.address.toString().isNotEmpty ?
@@ -325,11 +340,12 @@ class DisplayTask extends StatelessWidget {
                                   )
                                   // Sinon ne rien afficher
                                   : null
-                                ),
+                                  // Si pas de connexion Internet alors on n'affiche pas les données météo
+                                ) : Container(),
                               ],
                             ),
                           ),
-                        ),
+                        )
                       ],
                     ),
                   ),

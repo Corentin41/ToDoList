@@ -9,7 +9,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/screens/updateTask.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:todolist/l10n/app_localizations.dart';
 
 
 class DisplayTask extends StatelessWidget {

@@ -11,7 +11,7 @@ import 'package:todolist/screens/displayTask.dart';
 import 'database/task_db.dart';
 import 'model/task.dart';
 import 'screens/createTask.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:todolist/l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

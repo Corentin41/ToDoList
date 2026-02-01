@@ -6,7 +6,7 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:todolist/model/task.dart';
 import 'package:todolist/home.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:todolist/l10n/app_localizations.dart';
 import '../database/task_db.dart';
 
 class UpdateTask extends StatefulWidget {

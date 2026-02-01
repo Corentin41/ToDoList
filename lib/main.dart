@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +9,14 @@ import 'package:todolist/l10n/app_localizations.dart';
 import 'package:todolist/themes/theme_provider.dart';
 
 
-void main() {
+void main() async {
+  // Charger le fichier des variables d'environnement
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    print('Error loading .env file: $e');
+  }
+
   runApp(
     ChangeNotifierProvider(create: (context) => ThemeProvider(),
     child: const MainApp(),

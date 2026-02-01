@@ -6,7 +6,7 @@ Ce projet a été réalisé par :
 ## API utilisées
 
 ### API
-- OpenStreetMap : pour récupérer et afficher les données météo à partir de l'adresse saisie
+- OpenWeatherMap : pour récupérer et afficher les données météo à partir de l'adresse saisie
 
 ### Packages Flutter
 - shared_preferences : pour sauvegarder les choix de l'utilisateur (langue, thème, tri de la liste, tâches terminées)
@@ -30,6 +30,10 @@ Pour ce projet, nous avons respecté toutes les contraintes imposées par le suj
 Toutes ces fonctionnalités sont accessibles via le bouton des paramètres qui se trouve dans la navBar (sur la page d'affichage des tâches)
 
 ## Limitations
+Pour récupérer la météo, il faut créer le fichier ```.env``` à la racine du projet et y mettre sa clé API OpenWeatherMap. Le contenu du fichier ```.env``` doit ressembler à ça :
+
+```API_KEY=VOTRE_CLE_API```
+
 Avant de lancer le projet pour la première fois et après chaque modification des fichiers de langues (app_en.arb,...), il arrive que le code ne trouve pas les fichiers d'internationalisation pour la traduction de l'application. 
 Ceux-ci ne sont pas générés automatiquement et celà crée l'erreur dans les import pour récupérer les Strings de l'application :
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -38,6 +39,8 @@ class DisplayTask extends StatelessWidget {
     String _tempMax = '';
     String _icon = '';
 
+    String apiKey = "";
+
     // Si on a une adresse pour la tâche alors on peut récupérer la météo
     if (task.lat.toString().isNotEmpty && task.lng.toString().isNotEmpty) {
       double latitude = double.parse(task.lat.toString());
@@ -48,27 +51,32 @@ class DisplayTask extends StatelessWidget {
       String city = placemarks.first.locality!;
 
       // Appel à l'API Météo
-      const apiKey = '2caa69c974fa32ae3887bf4ad6de26a2'; // La clé API à demander sur OpenWeatherMap
+      apiKey = dotenv.env['API_KEY'] ?? "";
       final apiUrl = 'https://api.openweathermap.org/data/2.5/weather?q=$city&appid=$apiKey&units=metric&lang=fr';
 
       checkInternet = await InternetConnectionChecker().hasConnection;
       // S'assurer qu'on a accès à Internet pour faire l'appel API
-      if (checkInternet == true) {
-        final reponse = await http.get(Uri.parse(apiUrl));
+      try {
+        if (checkInternet == true) {
+          final reponse = await http.get(Uri.parse(apiUrl));
 
-        if (reponse.statusCode == 200) {
-          Map<String, dynamic> meteoData = json.decode(reponse.body);
-          // Récupérer les températures
-          _tempMin = '${meteoData['main']['temp_min']}°C';
-          _tempActuelle = '${meteoData['main']['temp_min']}°C';
-          _tempMax = '${meteoData['main']['temp']}°C';
+          if (reponse.statusCode == 200) {
+            Map<String, dynamic> meteoData = json.decode(reponse.body);
+            // Récupérer les températures
+            _tempMin = '${meteoData['main']['temp_min']}°C';
+            _tempActuelle = '${meteoData['main']['temp_min']}°C';
+            _tempMax = '${meteoData['main']['temp']}°C';
 
-          // Récupérer le type d'icone
-          _icon = '${meteoData['weather'][0]['icon']}';
-        } else {
-          throw Exception(AppLocalizations.of(context).weatherException);
+            // Récupérer le type d'icone
+            _icon = '${meteoData['weather'][0]['icon']}';
+          } else {
+            print(AppLocalizations.of(context).weatherException);
+          }
         }
+      } catch (e) {
+        print(e);
       }
+
     }
 
     // Affichage des données de la tâche dans un BottomSheet
@@ -303,7 +311,7 @@ class DisplayTask extends StatelessWidget {
                                     : Container(),
 
                                 // Données météo relatives à l'adresse
-                                checkInternet == true ?
+                                checkInternet == true && apiKey != "" ?
                                 Container(
                                   // Afficher la météo seulement s'il y a une adresse stockée en BDD
                                   child: task.address.toString().isNotEmpty ?

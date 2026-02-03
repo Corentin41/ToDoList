@@ -21,6 +21,7 @@ Ce projet a été réalisé par :
 - flutter_localizations : pour modifier la langue de l'application
 - intl : pour faciliter l'internationalisation
 - flutter_launcher_icons : pour ajouter un logo à l'application (Android et iOS)
+- flutter_dotenv : pour charger les données sensibles depuis un fichier .env
 
 ## Spécificités du projet
 Pour ce projet, nous avons respecté toutes les contraintes imposées par le sujet. Nous avons aussi ajouté quelques fonctionnalités supplémentaires :
